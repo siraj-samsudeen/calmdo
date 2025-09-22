@@ -147,6 +147,6 @@ A lightweight, real-time task manager for teams and clients, focused on **loggin
 
 - [ ] **Create app**  
   ```bash
-  mix igniter.new calmdo --phx.new --live
+  mix igniter.new calmdo --with=phx.new
   cd calmdo
   mix ecto.create

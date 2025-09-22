@@ -63,6 +63,9 @@ config :calmdo, CalmdoWeb.Endpoint,
     ]
   ]
 
+config :calmdo, Calmdo.Mailer, adapter: Swoosh.Adapters.Local
+config :swoosh, :local, true
+
 # Enable dev routes for dashboard and mailbox
 config :calmdo, dev_routes: true
 
