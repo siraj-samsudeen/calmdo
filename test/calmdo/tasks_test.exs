@@ -9,7 +9,7 @@ defmodule Calmdo.TasksTest do
     import Calmdo.AccountsFixtures, only: [user_scope_fixture: 0]
     import Calmdo.TasksFixtures
 
-    @invalid_attrs %{priority: nil, status: nil, title: nil, notes: nil, due_date: nil}
+    @invalid_attrs %{title: nil}
 
     test "list_tasks/1 returns all scoped tasks" do
       scope = user_scope_fixture()

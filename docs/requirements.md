@@ -52,6 +52,7 @@ A lightweight, real-time task manager for teams and clients, focused on **loggin
 ### 3.5 Tasks
 - **Associations:** `project_id`, `status_id`, `assignee_id (User)`, `created_by_id (User)`
 - **Fields:** `title`, `priority (enum: low|medium|high)`, `due_date`
+- **Validation (Iteration 1):** Only `title` is mandatory; other task fields may be left empty or null.
 - **Notes:** multiple markdown notes (authored, editable)
 - **Tags:** **global tags on tasks only**
 - **Checklists:** checklist items belong to tasks (not subtasks)

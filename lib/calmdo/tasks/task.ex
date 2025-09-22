@@ -18,8 +18,8 @@ defmodule Calmdo.Tasks.Task do
   @doc false
   def changeset(task, attrs, user_scope) do
     task
-    |> cast(attrs, [:title, :notes, :status, :priority, :due_date])
-    |> validate_required([:title, :notes, :status, :priority, :due_date])
+    |> cast(attrs, [:title, :notes, :status, :priority, :due_date, :assignee_id, :created_by_id])
+    |> validate_required([:title])
     |> put_change(:user_id, user_scope.user.id)
   end
 end
