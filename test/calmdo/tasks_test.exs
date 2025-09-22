@@ -29,7 +29,14 @@ defmodule Calmdo.TasksTest do
     end
 
     test "create_task/2 with valid data creates a task" do
-      valid_attrs = %{priority: :low, status: :started, title: "some title", notes: "some notes", due_date: ~D[2025-09-21]}
+      valid_attrs = %{
+        priority: :low,
+        status: :started,
+        title: "some title",
+        notes: "some notes",
+        due_date: ~D[2025-09-21]
+      }
+
       scope = user_scope_fixture()
 
       assert {:ok, %Task{} = task} = Tasks.create_task(scope, valid_attrs)
@@ -49,7 +56,14 @@ defmodule Calmdo.TasksTest do
     test "update_task/3 with valid data updates the task" do
       scope = user_scope_fixture()
       task = task_fixture(scope)
-      update_attrs = %{priority: :medium, status: :work_in_progress, title: "some updated title", notes: "some updated notes", due_date: ~D[2025-09-22]}
+
+      update_attrs = %{
+        priority: :medium,
+        status: :work_in_progress,
+        title: "some updated title",
+        notes: "some updated notes",
+        due_date: ~D[2025-09-22]
+      }
 
       assert {:ok, %Task{} = task} = Tasks.update_task(scope, task, update_attrs)
       assert task.priority == :medium

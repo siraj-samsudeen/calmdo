@@ -4,8 +4,20 @@ defmodule CalmdoWeb.TaskLiveTest do
   import Phoenix.LiveViewTest
   import Calmdo.TasksFixtures
 
-  @create_attrs %{priority: :low, status: :started, title: "some title", notes: "some notes", due_date: "2025-09-21"}
-  @update_attrs %{priority: :medium, status: :work_in_progress, title: "some updated title", notes: "some updated notes", due_date: "2025-09-22"}
+  @create_attrs %{
+    priority: :low,
+    status: :started,
+    title: "some title",
+    notes: "some notes",
+    due_date: "2025-09-21"
+  }
+  @update_attrs %{
+    priority: :medium,
+    status: :work_in_progress,
+    title: "some updated title",
+    notes: "some updated notes",
+    due_date: "2025-09-22"
+  }
   @invalid_attrs %{priority: nil, status: nil, title: nil, notes: nil, due_date: nil}
 
   setup :register_and_log_in_user
