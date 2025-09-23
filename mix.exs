@@ -27,7 +27,7 @@ defmodule Calmdo.MixProject do
 
   def cli do
     [
-      preferred_envs: [precommit: :test]
+      preferred_envs: [precommit: :test, test_interactive: :test]
     ]
   end
 
@@ -40,6 +40,7 @@ defmodule Calmdo.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:phoenix_test, "~> 0.8"},
       {:mix_test_interactive, "~> 5.0"},
       {:bcrypt_elixir, "~> 3.0"},
       {:igniter, "~> 0.6", only: [:dev, :test]},
@@ -50,7 +51,7 @@ defmodule Calmdo.MixProject do
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.1.0"},
-      {:lazy_html, ">= 0.1.0", only: :test},
+      {:lazy_html, ">= 0.1.0"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
