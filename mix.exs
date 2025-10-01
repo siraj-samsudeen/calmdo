@@ -40,7 +40,8 @@ defmodule Calmdo.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix_test, "~> 0.8"},
+      # {:phoenix_test, "~> 0.8"},
+      {:phoenix_test, git: "https://github.com/siraj-samsudeen/phoenix_test.git", branch: "assert_text", only: :test},
       {:mix_test_interactive, "~> 5.0"},
       {:bcrypt_elixir, "~> 3.0"},
       {:igniter, "~> 0.6", only: [:dev, :test]},
