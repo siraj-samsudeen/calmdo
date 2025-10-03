@@ -20,4 +20,18 @@ defmodule Calmdo.TasksFixtures do
     {:ok, task} = Calmdo.Tasks.create_task(scope, attrs)
     task
   end
+
+  @doc """
+  Generate a project.
+  """
+  def project_fixture(scope, attrs \\ %{}) do
+    attrs =
+      Enum.into(attrs, %{
+        completed: true,
+        name: "some name"
+      })
+
+    {:ok, project} = Calmdo.Tasks.create_project(scope, attrs)
+    project
+  end
 end
