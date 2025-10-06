@@ -1,31 +1,51 @@
 # Manual User Onboarding (pre-email-provider)
 
-Use this process to confirm accounts and generate login links while the email provider is pending approval.
+Use this process to insert accounts, confirm them, and generate login links while Postmark is pending approval.
 
-1. Ask the teammate to visit `https://calmdo.gigalixirapp.com/users/register` and submit their email. The UI may show a warning, but the user row is inserted.
-2. In your shell, start a remote console on Gigalixir:
+1. Make sure the production machine is running. If `fly machines list` reports a `stopped` state, start it first:
    ```bash
-   gigalixir ps:remote_console -a calmdo
+   fly machines list
+   fly machines start <machine-id>
    ```
-3. For each teammate’s email, run the following in the console:
+2. Open a remote IEx shell on that machine:
+   ```bash
+   fly ssh console --select -C "/app/bin/calmdo remote"
+   ```
+   When prompted, pick the running machine. (Alternatively, run `fly ssh console --select` to open a shell, then execute `/app/bin/calmdo remote` inside it.)
+3. At the IEx prompt, run a script like the one below. Update the usernames/domain as needed—the example covers the four bisquared.com teammates you mentioned.
    ```elixir
-   alias Calmdo.{Accounts, Repo}
+   alias Calmdo.Accounts
+   alias Calmdo.Accounts.{User, UserToken}
+   alias Calmdo.Repo
 
-   email = "teammate@example.com"
+   domain = "bisquared.com"
+   usernames = ~w(siraj adhil zaseem sharbudeen)
 
-   # confirm the user so they can log in
-   user =
-     Accounts.get_user_by_email(email)
-     |> Calmdo.Accounts.User.confirm_changeset()
-     |> Repo.update!()
+   for username <- usernames do
+     email = "#{username}@#{domain}"
 
-   # create and persist a magic-link token
-   {token, token_struct} = Accounts.UserToken.build_email_token(user, "login")
-   Repo.insert!(token_struct)
+     user =
+       Accounts.get_user_by_email(email) ||
+         case Accounts.register_user(%{email: email}) do
+           {:ok, user} -> user
+           {:error, changeset} -> raise "Failed to register #{email}: #{inspect(changeset.errors)}"
+         end
 
-   # share this link with the teammate
-   IO.puts("Magic link for #{email}: https://calmdo.gigalixirapp.com/users/log-in/#{token}")
+     user =
+       if is_nil(user.confirmed_at) do
+         user
+         |> User.confirm_changeset()
+         |> Repo.update!()
+       else
+         user
+       end
+
+     {token, token_struct} = UserToken.build_email_token(user, "login")
+     Repo.insert!(token_struct)
+
+     IO.puts("Magic link for #{email}: https://calmdo.fly.dev/users/log-in/#{token}")
+   end
    ```
-4. Copy the printed URL and send it to the teammate—they can log in immediately without an email confirmation.
+4. Copy each printed URL and share it with the teammate. They can log in immediately without waiting for an email.
 
-Once the email provider (Postmark) approves your sender/domain, you can remove this manual step and rely on the automated confirmation emails.
+Once Postmark approves your sender/domain, you can remove this manual workflow and rely on the automated confirmation emails.
