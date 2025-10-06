@@ -64,6 +64,11 @@ defmodule CalmdoWeb.Router do
       live "/projects/new", ProjectLive.Form, :new
       live "/projects/:id", ProjectLive.Show, :show
       live "/projects/:id/edit", ProjectLive.Form, :edit
+
+      live "/activity_logs", ActivityLogLive.Index, :index
+      live "/activity_logs/new", ActivityLogLive.Form, :new
+      live "/activity_logs/:id", ActivityLogLive.Show, :show
+      live "/activity_logs/:id/edit", ActivityLogLive.Form, :edit
     end
 
     post "/users/update-password", UserSessionController, :update_password
