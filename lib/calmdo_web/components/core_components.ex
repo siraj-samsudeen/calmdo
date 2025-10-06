@@ -213,7 +213,11 @@ defmodule CalmdoWeb.CoreComponents do
         <select
           id={@id}
           name={@name}
-          class={[@class || "w-full select", @errors != [] && (@error_class || "select-error")]}
+          class={[
+            @class ||
+              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
+            @errors != [] && (@error_class || "border-error focus:ring-error/40")
+          ]}
           multiple={@multiple}
           {@rest}
         >
@@ -235,8 +239,9 @@ defmodule CalmdoWeb.CoreComponents do
           id={@id}
           name={@name}
           class={[
-            @class || "w-full textarea",
-            @errors != [] && (@error_class || "textarea-error")
+            @class ||
+              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
+            @errors != [] && (@error_class || "border-error focus:ring-error/40")
           ]}
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
@@ -258,8 +263,9 @@ defmodule CalmdoWeb.CoreComponents do
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
-            @class || "w-full input",
-            @errors != [] && (@error_class || "input-error")
+            @class ||
+              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
+            @errors != [] && (@error_class || "border-error focus:ring-error/40")
           ]}
           {@rest}
         />
@@ -334,8 +340,8 @@ defmodule CalmdoWeb.CoreComponents do
       end
 
     ~H"""
-    <table class="table table-zebra">
-      <thead>
+    <table class="table bg-white text-slate-900 shadow-sm">
+      <thead class="bg-slate-100 text-slate-600">
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
           <th :if={@action != []}>
@@ -344,11 +350,18 @@ defmodule CalmdoWeb.CoreComponents do
         </tr>
       </thead>
       <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
-        <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
+        <tr
+          :for={row <- @rows}
+          id={@row_id && @row_id.(row)}
+          class="border-b border-slate-100 last:border-b-0 even:bg-white odd:bg-slate-50"
+        >
           <td
             :for={col <- @col}
             phx-click={@row_click && @row_click.(row)}
-            class={@row_click && "hover:cursor-pointer"}
+            class={[
+              "align-middle",
+              @row_click && "hover:cursor-pointer hover:text-[#2563eb]"
+            ]}
           >
             {render_slot(col, @row_item.(row))}
           </td>

@@ -20,7 +20,7 @@ defmodule CalmdoWeb.Layouts do
 
   ## Examples
 
-      <Layouts.app flash={@flash}>
+      <Layouts.app flash={@flash} current_scope={@current_scope}>
         <h1>Content</h1>
       </Layouts.app>
 
@@ -31,42 +31,157 @@ defmodule CalmdoWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
+  attr :projects, :list,
+    default: [],
+    doc: "optional project entries to surface in the sidebar"
+
   slot :inner_block, required: true
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </header>
+    <div class="drawer lg:drawer-open min-h-screen bg-[#2f343f] text-slate-100">
+      <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
+      <div class="drawer-content flex min-h-screen flex-col">
+        <header class="sticky top-0 z-20 h-16 border-b border-[#1d4ed8]/60 bg-[#2563eb] text-white shadow-xl">
+          <div class="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-10">
+            <div class="flex-none lg:hidden">
+              <label for="layout-drawer" class="btn btn-ghost btn-square text-white" aria-label="Toggle sidebar">
+                <.icon name="hero-bars-3" class="size-5" />
+              </label>
+            </div>
+            <div class="flex-1">
+              <a href={~p"/"} class="btn btn-ghost text-lg font-semibold normal-case text-white hover:bg-white/10">
+                Calmdo
+              </a>
+            </div>
+            <div class="flex items-center gap-3 pr-1">
+              <div class="rounded-full border border-white/40 bg-white/80 px-3 py-1 shadow-sm">
+                <.theme_toggle />
+              </div>
+              <%= if @current_scope && @current_scope.user do %>
+                <div class="dropdown dropdown-end">
+                  <label tabindex="0" class="btn btn-ghost btn-circle avatar placeholder text-white">
+                    <div class="w-10 rounded-full bg-white text-[#2563eb]">
+                      <span>{user_initial(@current_scope.user)}</span>
+                    </div>
+                  </label>
+                  <ul tabindex="0" class="menu dropdown-content mt-3 w-56 rounded-box bg-white/95 p-2 text-slate-800 shadow-2xl">
+                    <li class="menu-title">{display_user_email(@current_scope.user)}</li>
+                    <li>
+                      <.link href={~p"/users/settings"}>Settings</.link>
+                    </li>
+                    <li>
+                      <.link href={~p"/users/log-out"} method="delete">Log out</.link>
+                    </li>
+                  </ul>
+                </div>
+              <% else %>
+                <div class="flex items-center gap-2">
+                  <.link href={~p"/users/log-in"} class="btn btn-sm border border-white/30 bg-white/20 text-white hover:bg-white/30">
+                    Log in
+                  </.link>
+                  <.link href={~p"/users/register"} class="btn btn-sm border border-white bg-white text-[#2563eb] hover:bg-white/90">
+                    Sign up
+                  </.link>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
+        <main class="flex flex-1 flex-col bg-[#2f343f]">
+          <div class="flex-1 py-10 lg:py-14">
+            <div class="mx-auto w-full max-w-6xl space-y-8 px-4 sm:px-6 lg:px-10">
+              <div class="rounded-3xl border border-white/8 bg-white/98 p-10 text-slate-900 shadow-2xl shadow-black/40">
+                {render_slot(@inner_block)}
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
-    </main>
+      <div class="drawer-side">
+        <label for="layout-drawer" class="drawer-overlay"></label>
+        <aside class="flex h-full w-72 flex-col border-r border-[#18202f] bg-gradient-to-b from-[#1f2a3a] via-[#253141] to-[#303d4e] px-4 py-10 text-white">
+          <nav class="flex flex-1 flex-col gap-8">
+            <section class="space-y-3">
+              <h2 class="px-3 text-xs font-semibold uppercase tracking-wide text-white/60">
+                Projects
+              </h2>
+              <ul class="space-y-2">
+                <li>
+                  <.link
+                    href={~p"/projects"}
+                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
+                  >
+                    All Projects
+                  </.link>
+                </li>
+                <li>
+                  <.link
+                    href={~p"/projects/new"}
+                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
+                  >
+                    New Project
+                  </.link>
+                </li>
+                <li :for={project <- @projects}>
+                  <.link
+                    href={~p"/projects/#{project}"}
+                    class="btn btn-ghost btn-block justify-start truncate rounded-xl border border-transparent text-white hover:border-white/20 hover:bg-white/10"
+                  >
+                    {project.name}
+                  </.link>
+                </li>
+              </ul>
+            </section>
+
+            <section class="space-y-3">
+              <h2 class="px-3 text-xs font-semibold uppercase tracking-wide text-white/60">Tasks</h2>
+              <ul class="space-y-2">
+                <li>
+                  <.link
+                    href={~p"/tasks"}
+                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
+                  >
+                    All Tasks
+                  </.link>
+                </li>
+                <li>
+                  <.link
+                    href={~p"/tasks"}
+                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
+                  >
+                    My Tasks
+                  </.link>
+                </li>
+              </ul>
+            </section>
+
+            <section class="space-y-3">
+              <h2 class="px-3 text-xs font-semibold uppercase tracking-wide text-white/60">Logs</h2>
+              <ul class="space-y-2">
+                <li>
+                  <.link
+                    href={~p"/activity_logs"}
+                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
+                  >
+                    All Logs
+                  </.link>
+                </li>
+                <li>
+                  <.link
+                    href={~p"/activity_logs"}
+                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
+                  >
+                    My Logs
+                  </.link>
+                </li>
+              </ul>
+            </section>
+          </nav>
+        </aside>
+      </div>
+    </div>
 
     <.flash_group flash={@flash} />
     """
@@ -122,33 +237,48 @@ defmodule CalmdoWeb.Layouts do
   """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
+    <div class="relative flex h-8 w-32 items-center rounded-full border border-white/40 bg-white/15 backdrop-blur shadow-inner">
+      <div class="absolute inset-y-1 left-1 w-1/3 rounded-full bg-white text-[#2563eb] shadow transition-all duration-200 ease-out [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3" />
 
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="z-10 flex w-1/3 cursor-pointer items-center justify-center text-xs font-semibold text-[#2563eb]"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="system"
       >
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-computer-desktop-micro" class="size-4" />
       </button>
 
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="z-10 flex w-1/3 cursor-pointer items-center justify-center text-xs font-semibold text-[#2563eb]"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="light"
       >
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-sun-micro" class="size-4" />
       </button>
 
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        class="z-10 flex w-1/3 cursor-pointer items-center justify-center text-xs font-semibold text-[#2563eb]"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="dark"
       >
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
+        <.icon name="hero-moon-micro" class="size-4" />
       </button>
     </div>
     """
   end
+
+  defp user_initial(%{email: email}) when is_binary(email) do
+    email
+    |> String.trim()
+    |> String.first()
+    |> case do
+      nil -> "?"
+      letter -> String.upcase(letter)
+    end
+  end
+
+  defp user_initial(_), do: "?"
+
+  defp display_user_email(%{email: email}) when is_binary(email), do: email
+  defp display_user_email(_), do: "Account"
 end
