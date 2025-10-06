@@ -12,6 +12,7 @@ defmodule Calmdo.Tasks.Task do
     field :created_by_id, :id
     belongs_to :user, Calmdo.Accounts.User
     belongs_to :project, Calmdo.Tasks.Project
+    has_many :activity_logs, Calmdo.ActivityLogs.ActivityLog
 
     timestamps(type: :utc_datetime)
   end

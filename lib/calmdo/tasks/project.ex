@@ -7,6 +7,7 @@ defmodule Calmdo.Tasks.Project do
     field :completed, :boolean, default: false
     belongs_to :user, Calmdo.Accounts.User
     has_many :tasks, Calmdo.Tasks.Task
+    has_many :activity_logs, Calmdo.ActivityLogs.ActivityLog
 
     timestamps(type: :utc_datetime)
   end

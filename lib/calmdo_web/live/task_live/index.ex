@@ -28,6 +28,9 @@ defmodule CalmdoWeb.TaskLive.Index do
         <:col :let={{_id, task}} label="Priority">{task.priority}</:col>
         <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
         <:action :let={{_id, task}}>
+          <.link navigate={log_time_path(task)}>Log Time</.link>
+        </:action>
+        <:action :let={{_id, task}}>
           <div class="sr-only">
             <.link navigate={~p"/tasks/#{task}"}>Show</.link>
           </div>
@@ -44,6 +47,14 @@ defmodule CalmdoWeb.TaskLive.Index do
       </.table>
     </Layouts.app>
     """
+  end
+
+  defp log_time_path(task) do
+    if task.project_id do
+      ~p"/activity_logs/new?task_id=#{task.id}&project_id=#{task.project_id}"
+    else
+      ~p"/activity_logs/new?task_id=#{task.id}"
+    end
   end
 
   @impl true

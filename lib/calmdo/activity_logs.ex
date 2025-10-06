@@ -41,7 +41,12 @@ defmodule Calmdo.ActivityLogs do
 
   """
   def list_activity_logs(%Scope{} = scope) do
-    Repo.all_by(ActivityLog, user_id: scope.user.id)
+    query =
+      from al in ActivityLog,
+        where: al.user_id == ^scope.user.id,
+        preload: [:task, :project]
+
+    Repo.all(query)
   end
 
   @doc """
@@ -59,7 +64,9 @@ defmodule Calmdo.ActivityLogs do
 
   """
   def get_activity_log!(%Scope{} = scope, id) do
-    Repo.get_by!(ActivityLog, id: id, user_id: scope.user.id)
+    ActivityLog
+    |> Repo.get_by!(id: id, user_id: scope.user.id)
+    |> Repo.preload([:task, :project])
   end
 
   @doc """

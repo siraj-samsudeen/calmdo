@@ -45,12 +45,19 @@ defmodule CalmdoWeb.Layouts do
         <header class="sticky top-0 z-20 h-16 border-b border-[#1d4ed8]/60 bg-[#2563eb] text-white shadow-xl">
           <div class="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-10">
             <div class="flex-none lg:hidden">
-              <label for="layout-drawer" class="btn btn-ghost btn-square text-white" aria-label="Toggle sidebar">
+              <label
+                for="layout-drawer"
+                class="btn btn-ghost btn-square text-white"
+                aria-label="Toggle sidebar"
+              >
                 <.icon name="hero-bars-3" class="size-5" />
               </label>
             </div>
             <div class="flex-1">
-              <a href={~p"/"} class="btn btn-ghost text-lg font-semibold normal-case text-white hover:bg-white/10">
+              <a
+                href={~p"/"}
+                class="btn btn-ghost text-lg font-semibold normal-case text-white hover:bg-white/10"
+              >
                 Calmdo
               </a>
             </div>
@@ -65,7 +72,10 @@ defmodule CalmdoWeb.Layouts do
                       <span>{user_initial(@current_scope.user)}</span>
                     </div>
                   </label>
-                  <ul tabindex="0" class="menu dropdown-content mt-3 w-56 rounded-box bg-white/95 p-2 text-slate-800 shadow-2xl">
+                  <ul
+                    tabindex="0"
+                    class="menu dropdown-content mt-3 w-56 rounded-box bg-white/95 p-2 text-slate-800 shadow-2xl"
+                  >
                     <li class="menu-title">{display_user_email(@current_scope.user)}</li>
                     <li>
                       <.link href={~p"/users/settings"}>Settings</.link>
@@ -77,10 +87,16 @@ defmodule CalmdoWeb.Layouts do
                 </div>
               <% else %>
                 <div class="flex items-center gap-2">
-                  <.link href={~p"/users/log-in"} class="btn btn-sm border border-white/30 bg-white/20 text-white hover:bg-white/30">
+                  <.link
+                    href={~p"/users/log-in"}
+                    class="btn btn-sm border border-white/30 bg-white/20 text-white hover:bg-white/30"
+                  >
                     Log in
                   </.link>
-                  <.link href={~p"/users/register"} class="btn btn-sm border border-white bg-white text-[#2563eb] hover:bg-white/90">
+                  <.link
+                    href={~p"/users/register"}
+                    class="btn btn-sm border border-white bg-white text-[#2563eb] hover:bg-white/90"
+                  >
                     Sign up
                   </.link>
                 </div>

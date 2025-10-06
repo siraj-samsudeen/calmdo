@@ -21,7 +21,15 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
         rows={@streams.activity_logs}
         row_click={fn {_id, activity_log} -> JS.navigate(~p"/activity_logs/#{activity_log}") end}
       >
-        <:col :let={{_id, activity_log}} label="Duration in hours">{activity_log.duration_in_hours}</:col>
+        <:col :let={{_id, activity_log}} label="Project">
+          {activity_log.project && activity_log.project.name}
+        </:col>
+        <:col :let={{_id, activity_log}} label="Task">
+          {activity_log.task && activity_log.task.title}
+        </:col>
+        <:col :let={{_id, activity_log}} label="Duration in hours">
+          {activity_log.duration_in_hours}
+        </:col>
         <:col :let={{_id, activity_log}} label="Notes">{activity_log.notes}</:col>
         <:action :let={{_id, activity_log}}>
           <div class="sr-only">
@@ -65,7 +73,8 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
   @impl true
   def handle_info({type, %Calmdo.ActivityLogs.ActivityLog{}}, socket)
       when type in [:created, :updated, :deleted] do
-    {:noreply, stream(socket, :activity_logs, list_activity_logs(socket.assigns.current_scope), reset: true)}
+    {:noreply,
+     stream(socket, :activity_logs, list_activity_logs(socket.assigns.current_scope), reset: true)}
   end
 
   defp list_activity_logs(current_scope) do
