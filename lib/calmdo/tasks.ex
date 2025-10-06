@@ -41,7 +41,12 @@ defmodule Calmdo.Tasks do
 
   """
   def list_tasks(%Scope{} = scope) do
-    Repo.all_by(Task, user_id: scope.user.id)
+    query = 
+      from t in Task,
+      where: t.user_id == ^scope.user.id,
+      preload: [:project]
+    
+    Repo.all(query)
   end
 
   @doc """

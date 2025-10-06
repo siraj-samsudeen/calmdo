@@ -5,7 +5,8 @@ defmodule Calmdo.Tasks.Project do
   schema "projects" do
     field :name, :string
     field :completed, :boolean, default: false
-    field :user_id, :id
+    belongs_to :user, Calmdo.Accounts.User
+    has_many :tasks, Calmdo.Tasks.Task
 
     timestamps(type: :utc_datetime)
   end

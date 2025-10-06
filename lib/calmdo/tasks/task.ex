@@ -10,7 +10,8 @@ defmodule Calmdo.Tasks.Task do
     field :due_date, :date
     field :assignee_id, :id
     field :created_by_id, :id
-    field :user_id, :id
+    belongs_to :user, Calmdo.Accounts.User
+    belongs_to :project, Calmdo.Tasks.Project
 
     timestamps(type: :utc_datetime)
   end
@@ -18,7 +19,16 @@ defmodule Calmdo.Tasks.Task do
   @doc false
   def changeset(task, attrs, user_scope) do
     task
-    |> cast(attrs, [:title, :notes, :status, :priority, :due_date, :assignee_id, :created_by_id])
+    |> cast(attrs, [
+      :title,
+      :notes,
+      :status,
+      :priority,
+      :due_date,
+      :assignee_id,
+      :created_by_id,
+      :project_id
+    ])
     |> validate_required([:title])
     |> put_change(:user_id, user_scope.user.id)
   end

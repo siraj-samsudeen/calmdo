@@ -22,6 +22,7 @@ defmodule CalmdoWeb.TaskLive.Index do
         row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
       >
         <:col :let={{_id, task}} label="Title">{task.title}</:col>
+        <:col :let={{_id, task}} label="Project">{task.project && task.project.name}</:col>
         <:col :let={{_id, task}} label="Notes">{task.notes}</:col>
         <:col :let={{_id, task}} label="Status">{task.status}</:col>
         <:col :let={{_id, task}} label="Priority">{task.priority}</:col>

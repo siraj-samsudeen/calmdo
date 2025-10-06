@@ -14,6 +14,13 @@ defmodule CalmdoWeb.TaskLive.Form do
       </.header>
 
       <.form for={@form} id="task-form" phx-change="validate" phx-submit="save">
+        <.input
+          field={@form[:project_id]}
+          type="select"
+          label="Project"
+          prompt="Choose a project"
+          options={@projects}
+        />
         <.input field={@form[:title]} type="text" label="Title" />
         <.input field={@form[:notes]} type="textarea" label="Notes" />
         <.input
@@ -42,9 +49,12 @@ defmodule CalmdoWeb.TaskLive.Form do
 
   @impl true
   def mount(params, _session, socket) do
+    projects = Tasks.list_projects(socket.assigns.current_scope)
+
     {:ok,
      socket
      |> assign(:return_to, return_to(params["return_to"]))
+     |> assign(:projects, Enum.map(projects, &{&1.name, &1.id}))
      |> apply_action(socket.assigns.live_action, params)}
   end
 
