@@ -29,8 +29,9 @@ custom classes must fully style the input
       @source "../../lib/my_app_web";
 
 - **Always use and maintain this import syntax** in the app.css file for projects generated with `phx.new`
-- **Never** use `@apply` when writing raw css
-- **Always** manually write your own tailwind-based components instead of using daisyUI for a unique, world-class design
+- Use `@apply` to extract recurring utility patterns and keep templates tidy
+- Do NOT use a long list of tailwind classes like class="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/20 text-secondary". I want things to be simple, minimal and default. EVERY tailwind class needs to be JUSTIFIED. 
+- **Always** use daisyUI whenever available. 
 - Out of the box **only the app.js and app.css bundles are supported**
   - You cannot reference an external vendor'd script `src` or link `href` in the layouts
   - You must import the vendor deps into app.js and app.css to use them
