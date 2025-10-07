@@ -12,5 +12,6 @@ postgres = "16.2"
 # on windows
 # add_fish_path (mise where postgres)/bin
 # set -Ux PGDATA (mise where postgres)/data
+# mise settings experimental=true has to be set for hooks to work
 enter = "pg_ctl status || pg_ctl start"
 leave = "pg_ctl stop"
