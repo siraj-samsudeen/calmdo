@@ -1,0 +1,16 @@
+[tools]
+erlang = "28.0"
+elixir = "1.18.4-otp-28"
+postgres = "16.2"
+[hooks]
+# path needs to the postgres bin dir and PGDATA env has to be set
+
+# on mac
+# export PATH=$PATH:/Users/siraj/.local/share/mise/installs/postgres/16.2/bin
+# export PGDATA=/Users/siraj/.local/share/mise/installs/postgres/16.2/data
+
+# on windows
+# add_fish_path (mise where postgres)/bin
+# set -Ux PGDATA (mise where postgres)/data
+enter = "pg_ctl status || pg_ctl start"
+leave = "pg_ctl stop"
