@@ -1,5 +1,7 @@
 # Manual User Onboarding (pre-email-provider)
 
+## Initial Registration
+
 Use this process to insert accounts, confirm them, and generate login links while Postmark is pending approval.
 
 1. Make sure the production machine is running. If `fly machines list` reports a `stopped` state, start it first:
@@ -49,3 +51,23 @@ Use this process to insert accounts, confirm them, and generate login links whil
 4. Copy each printed URL and share it with the teammate. They can log in immediately without waiting for an email.
 
 Once Postmark approves your sender/domain, you can remove this manual workflow and rely on the automated confirmation emails.
+
+## Set up password
+
+```elixir
+alias Calmdo.Accounts
+domain = "bisquared.com"
+usernames = ~w(siraj adhil zaseem sharbudeen)
+
+for username <- usernames do
+  email = "#{username}@#{domain}"
+
+  {:ok, {user, _expired}} =
+    email
+    |> Accounts.get_user_by_email()
+    |> Accounts.update_user_password(%{
+      password: "12-chars",
+      password_confirmation: "12-chars"
+    })
+end
+```
