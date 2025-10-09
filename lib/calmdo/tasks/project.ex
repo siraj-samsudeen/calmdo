@@ -5,7 +5,7 @@ defmodule Calmdo.Tasks.Project do
   schema "projects" do
     field :name, :string
     field :completed, :boolean, default: false
-    belongs_to :user, Calmdo.Accounts.User
+    belongs_to :owner, Calmdo.Accounts.User
     has_many :tasks, Calmdo.Tasks.Task
     has_many :activity_logs, Calmdo.ActivityLogs.ActivityLog
 
@@ -17,6 +17,6 @@ defmodule Calmdo.Tasks.Project do
     project
     |> cast(attrs, [:name, :completed])
     |> validate_required([:name, :completed])
-    |> put_change(:user_id, user_scope.user.id)
+    |> put_change(:owner_id, user_scope.user.id)
   end
 end

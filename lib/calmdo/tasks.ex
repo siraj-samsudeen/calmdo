@@ -41,11 +41,11 @@ defmodule Calmdo.Tasks do
 
   """
   def list_tasks(%Scope{} = scope) do
-    query = 
+    query =
       from t in Task,
-      where: t.user_id == ^scope.user.id,
-      preload: [:project]
-    
+        where: t.created_by_id == ^scope.user.id,
+        preload: [:project]
+
     Repo.all(query)
   end
 
@@ -64,7 +64,7 @@ defmodule Calmdo.Tasks do
 
   """
   def get_task!(%Scope{} = scope, id) do
-    Repo.get_by!(Task, id: id, user_id: scope.user.id)
+    Repo.get_by!(Task, id: id, created_by_id: scope.user.id)
   end
 
   @doc """
@@ -102,7 +102,7 @@ defmodule Calmdo.Tasks do
 
   """
   def update_task(%Scope{} = scope, %Task{} = task, attrs) do
-    true = task.user_id == scope.user.id
+    true = task.created_by_id == scope.user.id
 
     with {:ok, task = %Task{}} <-
            task
@@ -126,7 +126,7 @@ defmodule Calmdo.Tasks do
 
   """
   def delete_task(%Scope{} = scope, %Task{} = task) do
-    true = task.user_id == scope.user.id
+    true = task.created_by_id == scope.user.id
 
     with {:ok, task = %Task{}} <-
            Repo.delete(task) do
@@ -145,7 +145,7 @@ defmodule Calmdo.Tasks do
 
   """
   def change_task(%Scope{} = scope, %Task{} = task, attrs \\ %{}) do
-    true = task.user_id == scope.user.id
+    true = task.created_by_id == scope.user.id
 
     Task.changeset(task, attrs, scope)
   end
@@ -185,7 +185,7 @@ defmodule Calmdo.Tasks do
 
   """
   def list_projects(%Scope{} = scope) do
-    Repo.all_by(Project, user_id: scope.user.id)
+    Repo.all_by(Project, owner_id: scope.user.id)
   end
 
   @doc """
@@ -203,7 +203,7 @@ defmodule Calmdo.Tasks do
 
   """
   def get_project!(%Scope{} = scope, id) do
-    Repo.get_by!(Project, id: id, user_id: scope.user.id)
+    Repo.get_by!(Project, id: id, owner_id: scope.user.id)
   end
 
   @doc """
@@ -241,7 +241,7 @@ defmodule Calmdo.Tasks do
 
   """
   def update_project(%Scope{} = scope, %Project{} = project, attrs) do
-    true = project.user_id == scope.user.id
+    true = project.owner_id == scope.user.id
 
     with {:ok, project = %Project{}} <-
            project
@@ -265,7 +265,7 @@ defmodule Calmdo.Tasks do
 
   """
   def delete_project(%Scope{} = scope, %Project{} = project) do
-    true = project.user_id == scope.user.id
+    true = project.owner_id == scope.user.id
 
     with {:ok, project = %Project{}} <-
            Repo.delete(project) do
@@ -284,7 +284,7 @@ defmodule Calmdo.Tasks do
 
   """
   def change_project(%Scope{} = scope, %Project{} = project, attrs \\ %{}) do
-    true = project.user_id == scope.user.id
+    true = project.owner_id == scope.user.id
 
     Project.changeset(project, attrs, scope)
   end

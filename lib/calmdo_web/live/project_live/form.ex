@@ -46,7 +46,7 @@ defmodule CalmdoWeb.ProjectLive.Form do
   end
 
   defp apply_action(socket, :new, _params) do
-    project = %Project{user_id: socket.assigns.current_scope.user.id}
+    project = %Project{owner_id: socket.assigns.current_scope.user.id}
 
     socket
     |> assign(:page_title, "New Project")
@@ -56,7 +56,9 @@ defmodule CalmdoWeb.ProjectLive.Form do
 
   @impl true
   def handle_event("validate", %{"project" => project_params}, socket) do
-    changeset = Tasks.change_project(socket.assigns.current_scope, socket.assigns.project, project_params)
+    changeset =
+      Tasks.change_project(socket.assigns.current_scope, socket.assigns.project, project_params)
+
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -65,7 +67,11 @@ defmodule CalmdoWeb.ProjectLive.Form do
   end
 
   defp save_project(socket, :edit, project_params) do
-    case Tasks.update_project(socket.assigns.current_scope, socket.assigns.project, project_params) do
+    case Tasks.update_project(
+           socket.assigns.current_scope,
+           socket.assigns.project,
+           project_params
+         ) do
       {:ok, project} ->
         {:noreply,
          socket

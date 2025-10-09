@@ -3,8 +3,9 @@ defmodule CalmdoWeb.ActivityLogLiveTest do
 
   import Phoenix.LiveViewTest
   import Calmdo.ActivityLogsFixtures
+  import Calmdo.TasksFixtures
 
-  @create_attrs %{duration_in_hours: 42, notes: "some notes"}
+  @create_attrs %{duration_in_hours: 42, notes: "some notes", date: "2025-01-01"}
   @update_attrs %{duration_in_hours: 43, notes: "some updated notes"}
   @invalid_attrs %{duration_in_hours: nil, notes: nil}
 
@@ -26,7 +27,10 @@ defmodule CalmdoWeb.ActivityLogLiveTest do
       assert html =~ activity_log.notes
     end
 
-    test "saves new activity_log", %{conn: conn} do
+    test "saves new activity_log", %{conn: conn, scope: scope} do
+      project = project_fixture(scope)
+      create_attrs = Map.put(@create_attrs, :project_id, project.id)
+
       {:ok, index_live, _html} = live(conn, ~p"/activity_logs")
 
       assert {:ok, form_live, _} =
@@ -43,7 +47,7 @@ defmodule CalmdoWeb.ActivityLogLiveTest do
 
       assert {:ok, index_live, _html} =
                form_live
-               |> form("#activity_log-form", activity_log: @create_attrs)
+               |> form("#activity_log-form", activity_log: create_attrs)
                |> render_submit()
                |> follow_redirect(conn, ~p"/activity_logs")
 
@@ -81,7 +85,10 @@ defmodule CalmdoWeb.ActivityLogLiveTest do
     test "deletes activity_log in listing", %{conn: conn, activity_log: activity_log} do
       {:ok, index_live, _html} = live(conn, ~p"/activity_logs")
 
-      assert index_live |> element("#activity_logs-#{activity_log.id} a", "Delete") |> render_click()
+      assert index_live
+             |> element("#activity_logs-#{activity_log.id} a", "Delete")
+             |> render_click()
+
       refute has_element?(index_live, "#activity_logs-#{activity_log.id}")
     end
   end

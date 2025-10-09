@@ -14,6 +14,13 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
       </.header>
 
       <.form for={@form} id="activity_log-form" phx-change="validate" phx-submit="save">
+        <%!-- TODO: detect viewer timezone and seed a local date instead of UTC --%>
+        <.input
+          field={@form[:date]}
+          type="date"
+          label="Date"
+          value={@form[:date].value || Date.utc_today()}
+        />
         <.input
           field={@form[:project_id]}
           type="select"
@@ -30,7 +37,9 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
           phx-change="task_selected"
         />
         <.input field={@form[:duration_in_hours]} type="number" label="Duration in hours" />
+        <.input field={@form[:duration_in_minutes]} type="number" label="Duration in minutes" />
         <.input field={@form[:notes]} type="textarea" label="Notes" />
+        <.input field={@form[:billable]} type="checkbox" label="Billable" />
         <footer>
           <.button phx-disable-with="Saving..." variant="primary">Save Activity log</.button>
           <.button navigate={return_path(@current_scope, @return_to, @activity_log)}>Cancel</.button>
@@ -77,13 +86,13 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
         task = Calmdo.Tasks.get_task!(socket.assigns.current_scope, task_id)
 
         %ActivityLog{
-          user_id: socket.assigns.current_scope.user.id,
+          logged_by_id: socket.assigns.current_scope.user.id,
           task_id: task.id,
           project_id: task.project_id
         }
       else
         %ActivityLog{
-          user_id: socket.assigns.current_scope.user.id,
+          logged_by_id: socket.assigns.current_scope.user.id,
           # Use project_id from params if no task
           project_id: project_id
         }

@@ -16,8 +16,8 @@ defmodule Calmdo.TasksTest do
       other_scope = user_scope_fixture()
       task = task_fixture(scope)
       other_task = task_fixture(other_scope)
-      assert Tasks.list_tasks(scope) == [task]
-      assert Tasks.list_tasks(other_scope) == [other_task]
+      assert Enum.map(Tasks.list_tasks(scope), & &1.id) == [task.id]
+      assert Enum.map(Tasks.list_tasks(other_scope), & &1.id) == [other_task.id]
     end
 
     test "get_task!/2 returns the task with given id" do
@@ -45,7 +45,7 @@ defmodule Calmdo.TasksTest do
       assert task.title == "some title"
       assert task.notes == "some notes"
       assert task.due_date == ~D[2025-09-21]
-      assert task.user_id == scope.user.id
+      assert task.created_by_id == scope.user.id
     end
 
     test "create_task/2 with invalid data returns error changeset" do
@@ -143,7 +143,7 @@ defmodule Calmdo.TasksTest do
       assert {:ok, %Project{} = project} = Tasks.create_project(scope, valid_attrs)
       assert project.name == "some name"
       assert project.completed == true
-      assert project.user_id == scope.user.id
+      assert project.owner_id == scope.user.id
     end
 
     test "create_project/2 with invalid data returns error changeset" do

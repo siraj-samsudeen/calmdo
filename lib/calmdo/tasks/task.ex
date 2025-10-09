@@ -8,10 +8,11 @@ defmodule Calmdo.Tasks.Task do
     field :status, Ecto.Enum, values: [:started, :work_in_progress, :completed]
     field :priority, Ecto.Enum, values: [:low, :medium, :high]
     field :due_date, :date
-    field :assignee_id, :id
-    field :created_by_id, :id
-    belongs_to :user, Calmdo.Accounts.User
+
+    belongs_to :created_by, Calmdo.Accounts.User
+    belongs_to :assignee, Calmdo.Accounts.User
     belongs_to :project, Calmdo.Tasks.Project
+
     has_many :activity_logs, Calmdo.ActivityLogs.ActivityLog
 
     timestamps(type: :utc_datetime)
@@ -27,10 +28,9 @@ defmodule Calmdo.Tasks.Task do
       :priority,
       :due_date,
       :assignee_id,
-      :created_by_id,
       :project_id
     ])
     |> validate_required([:title])
-    |> put_change(:user_id, user_scope.user.id)
+    |> put_change(:created_by_id, user_scope.user.id)
   end
 end

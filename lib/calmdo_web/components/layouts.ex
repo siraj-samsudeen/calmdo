@@ -134,10 +134,10 @@ defmodule CalmdoWeb.Layouts do
                 </li>
                 <li>
                   <.link
-                    href={~p"/projects/new"}
+                    href={~p"/projects"}
                     class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
                   >
-                    New Project
+                    My Projects
                   </.link>
                 </li>
                 <li :for={project <- @projects}>

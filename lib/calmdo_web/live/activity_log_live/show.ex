@@ -14,7 +14,10 @@ defmodule CalmdoWeb.ActivityLogLive.Show do
           <.button navigate={~p"/activity_logs"}>
             <.icon name="hero-arrow-left" />
           </.button>
-          <.button variant="primary" navigate={~p"/activity_logs/#{@activity_log}/edit?return_to=show"}>
+          <.button
+            variant="primary"
+            navigate={~p"/activity_logs/#{@activity_log}/edit?return_to=show"}
+          >
             <.icon name="hero-pencil-square" /> Edit activity_log
           </.button>
         </:actions>

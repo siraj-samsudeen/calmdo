@@ -43,7 +43,7 @@ defmodule Calmdo.ActivityLogs do
   def list_activity_logs(%Scope{} = scope) do
     query =
       from al in ActivityLog,
-        where: al.user_id == ^scope.user.id,
+        where: al.logged_by_id == ^scope.user.id,
         preload: [:task, :project]
 
     Repo.all(query)
@@ -65,7 +65,7 @@ defmodule Calmdo.ActivityLogs do
   """
   def get_activity_log!(%Scope{} = scope, id) do
     ActivityLog
-    |> Repo.get_by!(id: id, user_id: scope.user.id)
+    |> Repo.get_by!(id: id, logged_by_id: scope.user.id)
     |> Repo.preload([:task, :project])
   end
 
@@ -104,7 +104,7 @@ defmodule Calmdo.ActivityLogs do
 
   """
   def update_activity_log(%Scope{} = scope, %ActivityLog{} = activity_log, attrs) do
-    true = activity_log.user_id == scope.user.id
+    true = activity_log.logged_by_id == scope.user.id
 
     with {:ok, activity_log = %ActivityLog{}} <-
            activity_log
@@ -128,7 +128,7 @@ defmodule Calmdo.ActivityLogs do
 
   """
   def delete_activity_log(%Scope{} = scope, %ActivityLog{} = activity_log) do
-    true = activity_log.user_id == scope.user.id
+    true = activity_log.logged_by_id == scope.user.id
 
     with {:ok, activity_log = %ActivityLog{}} <-
            Repo.delete(activity_log) do
@@ -147,7 +147,7 @@ defmodule Calmdo.ActivityLogs do
 
   """
   def change_activity_log(%Scope{} = scope, %ActivityLog{} = activity_log, attrs \\ %{}) do
-    true = activity_log.user_id == scope.user.id
+    true = activity_log.logged_by_id == scope.user.id
 
     ActivityLog.changeset(activity_log, attrs, scope)
   end

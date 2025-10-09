@@ -71,7 +71,7 @@ defmodule CalmdoWeb.TaskLive.Form do
   end
 
   defp apply_action(socket, :new, _params) do
-    task = %Task{user_id: socket.assigns.current_scope.user.id}
+    task = %Task{created_by_id: socket.assigns.current_scope.user.id}
 
     socket
     |> assign(:page_title, "New Task")
