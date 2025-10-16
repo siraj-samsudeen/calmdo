@@ -1,7 +1,7 @@
 [tools]
 erlang = "28.0"
 elixir = "1.18.4-otp-28"
-postgres = "16.2"
+postgres = "17"
 [hooks]
 # path needs to the postgres bin dir and PGDATA env has to be set
 
@@ -15,3 +15,8 @@ postgres = "16.2"
 # mise settings experimental=true has to be set for hooks to work
 enter = "pg_ctl status || pg_ctl start"
 leave = "pg_ctl stop"
+
+[tasks.backup]
+run = '''
+pg_dump "$(neonctl connection-string production)" > backups/prod_data_$(date +%F).sql
+'''
