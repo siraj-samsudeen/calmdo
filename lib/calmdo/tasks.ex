@@ -48,12 +48,23 @@ defmodule Calmdo.Tasks do
     status = Keyword.get(opts, :status)
     assignee_id = Keyword.get(opts, :assignee_id)
 
-    from(t in Task,
-      preload: [:project, :activity_logs, :assignee],
-      where: is_nil(^status) or t.status == ^status,
-      where: is_nil(^assignee_id) or t.assignee_id == ^assignee_id
-    )
-    |> Repo.all()
+    base = from(t in Task, preload: [:project, :activity_logs, :assignee])
+
+    base =
+      if status do
+        from t in base, where: t.status == ^status
+      else
+        base
+      end
+
+    base =
+      if assignee_id do
+        from t in base, where: t.assignee_id == ^assignee_id
+      else
+        base
+      end
+
+    Repo.all(base)
   end
 
   @doc """

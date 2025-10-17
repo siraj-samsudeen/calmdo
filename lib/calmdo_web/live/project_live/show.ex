@@ -34,7 +34,11 @@ defmodule CalmdoWeb.ProjectLive.Show do
             </.link>
           </div>
 
-          <.table id="project-tasks" rows={@tasks_rows} row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}>
+          <.table
+            id="project-tasks"
+            rows={@streams.tasks_rows}
+            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
+          >
             <:col :let={{_id, task}} label="Title">{task.title}</:col>
             <:col :let={{_id, task}} label="Status">{task.status}</:col>
             <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
@@ -44,7 +48,9 @@ defmodule CalmdoWeb.ProjectLive.Show do
               </.link>
             </:col>
             <:action :let={{_id, task}}>
-              <.link navigate={~p"/activity_logs/new?task_id=#{task.id}&project_id=#{@project.id}"}>Log Time</.link>
+              <.link navigate={~p"/activity_logs/new?task_id=#{task.id}&project_id=#{@project.id}"}>
+                Log Time
+              </.link>
             </:action>
           </.table>
         </div>
@@ -57,12 +63,16 @@ defmodule CalmdoWeb.ProjectLive.Show do
             </.link>
           </div>
 
-          <.table id="project-logs" rows={@logs_rows} row_click={fn {_id, log} -> JS.navigate(~p"/activity_logs/#{log}") end}>
+          <.table
+            id="project-logs"
+            rows={@streams.logs_rows}
+            row_click={fn {_id, log} -> JS.navigate(~p"/activity_logs/#{log}") end}
+          >
             <:col :let={{_id, log}} label="Date">{log.date}</:col>
             <:col :let={{_id, log}} label="Task">{log.task && log.task.title}</:col>
             <:col :let={{_id, log}} label="Project">{log.project && log.project.name}</:col>
             <:col :let={{_id, log}} label="Duration">
-              {((log.duration_in_hours || 0) + ((log.duration_in_minutes || 0) / 60)) |> Float.round(2)}
+              {((log.duration_in_hours || 0) + (log.duration_in_minutes || 0) / 60) |> Float.round(2)}
             </:col>
           </.table>
         </div>
@@ -81,7 +91,9 @@ defmodule CalmdoWeb.ProjectLive.Show do
 
     project = Tasks.get_project!(socket.assigns.current_scope, id)
     tasks = Tasks.list_tasks_for_project(socket.assigns.current_scope, project.id)
-    logs = Calmdo.ActivityLogs.list_activity_logs_for_project(socket.assigns.current_scope, project.id)
+
+    logs =
+      Calmdo.ActivityLogs.list_activity_logs_for_project(socket.assigns.current_scope, project.id)
 
     {:ok,
      socket
@@ -114,7 +126,8 @@ defmodule CalmdoWeb.ProjectLive.Show do
     {:noreply, socket}
   end
 
-  def handle_info({type, %Calmdo.Tasks.Task{}}, socket) when type in [:created, :updated, :deleted] do
+  def handle_info({type, %Calmdo.Tasks.Task{}}, socket)
+      when type in [:created, :updated, :deleted] do
     tasks = Tasks.list_tasks_for_project(socket.assigns.current_scope, socket.assigns.project.id)
     {:noreply, stream(socket, :tasks_rows, tasks, reset: true)}
   end
@@ -132,12 +145,13 @@ defmodule CalmdoWeb.ProjectLive.Show do
 
   defp total_hours(task) do
     Enum.reduce(task.activity_logs || [], 0, fn al, acc ->
-      (al.duration_in_hours || 0) + (acc + ((al.duration_in_minutes || 0) / 60))
+      (al.duration_in_hours || 0) + (acc + (al.duration_in_minutes || 0) / 60)
     end)
   end
 
   defp format_hours(value) when is_number(value) do
     value
+    |> Kernel.+(0.0)
     |> Float.round(2)
     |> to_string()
   end

@@ -12,24 +12,24 @@ defmodule Calmdo.ActivityLogsTest do
 
     @invalid_attrs %{date: nil, duration_in_hours: nil, duration_in_minutes: nil, notes: nil}
 
-    test "list_activity_logs/1 returns all scoped activity_logs" do
+    test "list_activity_logs/1 returns all activity_logs (shared)" do
       scope = user_scope_fixture()
       other_scope = user_scope_fixture()
       activity_log = activity_log_fixture(scope)
       other_activity_log = activity_log_fixture(other_scope)
-      assert ActivityLogs.list_activity_logs(scope) == [activity_log]
-      assert ActivityLogs.list_activity_logs(other_scope) == [other_activity_log]
+      ids = Enum.map(ActivityLogs.list_activity_logs(scope), & &1.id) |> Enum.sort()
+      assert ids == Enum.sort([activity_log.id, other_activity_log.id])
+
+      ids2 = Enum.map(ActivityLogs.list_activity_logs(other_scope), & &1.id) |> Enum.sort()
+      assert ids2 == Enum.sort([activity_log.id, other_activity_log.id])
     end
 
-    test "get_activity_log!/2 returns the activity_log with given id" do
+    test "get_activity_log!/2 returns the activity_log with given id (shared)" do
       scope = user_scope_fixture()
       activity_log = activity_log_fixture(scope)
       other_scope = user_scope_fixture()
       assert ActivityLogs.get_activity_log!(scope, activity_log.id) == activity_log
-
-      assert_raise Ecto.NoResultsError, fn ->
-        ActivityLogs.get_activity_log!(other_scope, activity_log.id)
-      end
+      assert ActivityLogs.get_activity_log!(other_scope, activity_log.id) == activity_log
     end
 
     test "create_activity_log/2 with valid data creates a activity_log" do

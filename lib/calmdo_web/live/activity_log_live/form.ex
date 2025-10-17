@@ -201,6 +201,7 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
           activity_log_params
         else
           project_id = activity_log_params["project_id"]
+
           {:ok, task} =
             Calmdo.Tasks.create_task(socket.assigns.current_scope, %{
               "title" => title,

@@ -92,8 +92,8 @@ defmodule CalmdoWeb.ProjectLiveTest do
     test "displays project", %{conn: conn, project: project} do
       {:ok, _show_live, html} = live(conn, ~p"/projects/#{project}")
 
-      assert html =~ "Show Project"
       assert html =~ project.name
+      assert html =~ "Project overview"
     end
 
     test "updates project and returns to show", %{conn: conn, project: project} do

@@ -16,7 +16,12 @@ defmodule CalmdoWeb.TaskLive.Index do
         </:actions>
       </.header>
 
-      <.form for={%{}} id="task-filters" phx-change="filter" class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <.form
+        for={%{}}
+        id="task-filters"
+        phx-change="filter"
+        class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3"
+      >
         <.input
           name="status"
           type="select"
@@ -34,9 +39,13 @@ defmodule CalmdoWeb.TaskLive.Index do
       </.form>
 
       <div class="space-y-8">
-        <div :if={@streams.tasks_started |> Enum.any?()}>
+        <div>
           <h2 class="mb-2 text-sm font-semibold">Started</h2>
-          <.table id="tasks-started" rows={@streams.tasks_started} row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}>
+          <.table
+            id="tasks-started"
+            rows={@streams.tasks_started}
+            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
+          >
             <:col :let={{_id, task}} label="Title">{task.title}</:col>
             <:col :let={{_id, task}} label="Project">{task.project && task.project.name}</:col>
             <:col :let={{_id, task}} label="Assignee">{task.assignee && task.assignee.email}</:col>
@@ -50,12 +59,30 @@ defmodule CalmdoWeb.TaskLive.Index do
             <:action :let={{_id, task}}>
               <.link navigate={log_time_path(task)}>Log Time</.link>
             </:action>
+            <:action :let={{_id, task}}>
+              <div class="sr-only">
+                <.link navigate={~p"/tasks/#{task}"}>Show</.link>
+              </div>
+              <.link navigate={~p"/tasks/#{task}/edit"}>Edit</.link>
+            </:action>
+            <:action :let={{id, task}}>
+              <.link
+                phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{id}")}
+                data-confirm="Are you sure?"
+              >
+                Delete
+              </.link>
+            </:action>
           </.table>
         </div>
 
-        <div :if={@streams.tasks_work_in_progress |> Enum.any?()}>
+        <div>
           <h2 class="mb-2 text-sm font-semibold">Work In Progress</h2>
-          <.table id="tasks-wip" rows={@streams.tasks_work_in_progress} row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}>
+          <.table
+            id="tasks-wip"
+            rows={@streams.tasks_work_in_progress}
+            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
+          >
             <:col :let={{_id, task}} label="Title">{task.title}</:col>
             <:col :let={{_id, task}} label="Project">{task.project && task.project.name}</:col>
             <:col :let={{_id, task}} label="Assignee">{task.assignee && task.assignee.email}</:col>
@@ -69,12 +96,30 @@ defmodule CalmdoWeb.TaskLive.Index do
             <:action :let={{_id, task}}>
               <.link navigate={log_time_path(task)}>Log Time</.link>
             </:action>
+            <:action :let={{_id, task}}>
+              <div class="sr-only">
+                <.link navigate={~p"/tasks/#{task}"}>Show</.link>
+              </div>
+              <.link navigate={~p"/tasks/#{task}/edit"}>Edit</.link>
+            </:action>
+            <:action :let={{id, task}}>
+              <.link
+                phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{id}")}
+                data-confirm="Are you sure?"
+              >
+                Delete
+              </.link>
+            </:action>
           </.table>
         </div>
 
-        <div :if={@streams.tasks_completed |> Enum.any?()}>
+        <div>
           <h2 class="mb-2 text-sm font-semibold">Completed</h2>
-          <.table id="tasks-completed" rows={@streams.tasks_completed} row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}>
+          <.table
+            id="tasks-completed"
+            rows={@streams.tasks_completed}
+            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
+          >
             <:col :let={{_id, task}} label="Title">{task.title}</:col>
             <:col :let={{_id, task}} label="Project">{task.project && task.project.name}</:col>
             <:col :let={{_id, task}} label="Assignee">{task.assignee && task.assignee.email}</:col>
@@ -87,6 +132,20 @@ defmodule CalmdoWeb.TaskLive.Index do
             </:col>
             <:action :let={{_id, task}}>
               <.link navigate={log_time_path(task)}>Log Time</.link>
+            </:action>
+            <:action :let={{_id, task}}>
+              <div class="sr-only">
+                <.link navigate={~p"/tasks/#{task}"}>Show</.link>
+              </div>
+              <.link navigate={~p"/tasks/#{task}/edit"}>Edit</.link>
+            </:action>
+            <:action :let={{id, task}}>
+              <.link
+                phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{id}")}
+                data-confirm="Are you sure?"
+              >
+                Delete
+              </.link>
             </:action>
           </.table>
         </div>
@@ -115,6 +174,9 @@ defmodule CalmdoWeb.TaskLive.Index do
       |> assign(:statuses, Ecto.Enum.values(Calmdo.Tasks.Task, :status))
       |> assign(:assignees, Calmdo.Accounts.list_users())
       |> assign(:filters, %{status: nil, assignee_id: nil})
+      |> stream_configure(:tasks_started, dom_id: &"tasks-started-#{&1.id}")
+      |> stream_configure(:tasks_work_in_progress, dom_id: &"tasks-work_in_progress-#{&1.id}")
+      |> stream_configure(:tasks_completed, dom_id: &"tasks-completed-#{&1.id}")
       |> assign_task_groups()
 
     {:ok, socket}
@@ -123,9 +185,16 @@ defmodule CalmdoWeb.TaskLive.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     task = Tasks.get_task!(socket.assigns.current_scope, id)
-    {:ok, _} = Tasks.delete_task(socket.assigns.current_scope, task)
 
-    {:noreply, stream_delete(socket, :tasks, task)}
+    stream_name =
+      case task.status do
+        :started -> :tasks_started
+        :work_in_progress -> :tasks_work_in_progress
+        :completed -> :tasks_completed
+      end
+
+    {:ok, _} = Tasks.delete_task(socket.assigns.current_scope, task)
+    {:noreply, stream_delete(socket, stream_name, task)}
   end
 
   @impl true
@@ -135,7 +204,10 @@ defmodule CalmdoWeb.TaskLive.Index do
   end
 
   defp list_tasks(current_scope, filters \\ %{status: nil, assignee_id: nil}) do
-    status = if is_nil(filters.status) or filters.status == "", do: nil, else: String.to_existing_atom(to_string(filters.status))
+    status =
+      if is_nil(filters.status) or filters.status == "",
+        do: nil,
+        else: String.to_existing_atom(to_string(filters.status))
 
     assignee_id =
       case filters.assignee_id do
@@ -150,17 +222,19 @@ defmodule CalmdoWeb.TaskLive.Index do
 
   defp total_hours(task) do
     Enum.reduce(task.activity_logs || [], 0, fn al, acc ->
-      (al.duration_in_hours || 0) + (acc + ((al.duration_in_minutes || 0) / 60))
+      (al.duration_in_hours || 0) + (acc + (al.duration_in_minutes || 0) / 60)
     end)
   end
 
   defp format_hours(value) when is_number(value) do
     value
+    |> Kernel.+(0.0)
     |> Float.round(2)
     |> to_string()
   end
 
   defp format_status(:work_in_progress), do: "Work In Progress"
+
   defp format_status(atom) when is_atom(atom) do
     atom
     |> Atom.to_string()

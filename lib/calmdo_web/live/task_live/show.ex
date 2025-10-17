@@ -77,12 +77,13 @@ defmodule CalmdoWeb.TaskLive.Show do
 
   defp total_hours(task) do
     Enum.reduce(task.activity_logs || [], 0, fn al, acc ->
-      (al.duration_in_hours || 0) + (acc + ((al.duration_in_minutes || 0) / 60))
+      (al.duration_in_hours || 0) + (acc + (al.duration_in_minutes || 0) / 60)
     end)
   end
 
   defp format_hours(value) when is_number(value) do
     value
+    |> Kernel.+(0.0)
     |> Float.round(2)
     |> to_string()
   end

@@ -11,21 +11,25 @@ defmodule Calmdo.TasksTest do
 
     @invalid_attrs %{title: nil}
 
-    test "list_tasks/1 returns all scoped tasks" do
+    test "list_tasks/1 returns all tasks (shared)" do
       scope = user_scope_fixture()
       other_scope = user_scope_fixture()
       task = task_fixture(scope)
       other_task = task_fixture(other_scope)
-      assert Enum.map(Tasks.list_tasks(scope), & &1.id) == [task.id]
-      assert Enum.map(Tasks.list_tasks(other_scope), & &1.id) == [other_task.id]
+
+      assert Enum.sort(Enum.map(Tasks.list_tasks(scope), & &1.id)) ==
+               Enum.sort([task.id, other_task.id])
+
+      assert Enum.sort(Enum.map(Tasks.list_tasks(other_scope), & &1.id)) ==
+               Enum.sort([task.id, other_task.id])
     end
 
-    test "get_task!/2 returns the task with given id" do
+    test "get_task!/2 returns the task with given id (shared)" do
       scope = user_scope_fixture()
       task = task_fixture(scope)
       other_scope = user_scope_fixture()
       assert Tasks.get_task!(scope, task.id) == task
-      assert_raise Ecto.NoResultsError, fn -> Tasks.get_task!(other_scope, task.id) end
+      assert Tasks.get_task!(other_scope, task.id) == task
     end
 
     test "create_task/2 with valid data creates a task" do
@@ -119,21 +123,24 @@ defmodule Calmdo.TasksTest do
 
     @invalid_attrs %{name: nil, completed: nil}
 
-    test "list_projects/1 returns all scoped projects" do
+    test "list_projects/1 returns all projects (shared)" do
       scope = user_scope_fixture()
       other_scope = user_scope_fixture()
       project = project_fixture(scope)
       other_project = project_fixture(other_scope)
-      assert Tasks.list_projects(scope) == [project]
-      assert Tasks.list_projects(other_scope) == [other_project]
+      ids = Enum.map(Tasks.list_projects(scope), & &1.id) |> Enum.sort()
+      assert ids == Enum.sort([project.id, other_project.id])
+
+      ids2 = Enum.map(Tasks.list_projects(other_scope), & &1.id) |> Enum.sort()
+      assert ids2 == Enum.sort([project.id, other_project.id])
     end
 
-    test "get_project!/2 returns the project with given id" do
+    test "get_project!/2 returns the project with given id (shared)" do
       scope = user_scope_fixture()
       project = project_fixture(scope)
       other_scope = user_scope_fixture()
       assert Tasks.get_project!(scope, project.id) == project
-      assert_raise Ecto.NoResultsError, fn -> Tasks.get_project!(other_scope, project.id) end
+      assert Tasks.get_project!(other_scope, project.id) == project
     end
 
     test "create_project/2 with valid data creates a project" do

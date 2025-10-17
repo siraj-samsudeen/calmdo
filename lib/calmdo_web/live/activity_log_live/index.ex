@@ -82,18 +82,20 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
     project_id = Map.get(params, "project_id")
 
     cond do
-      task_id -> ActivityLogs.list_activity_logs(current_scope, task_id: String.to_integer(task_id))
+      task_id ->
+        ActivityLogs.list_activity_logs(current_scope, task_id: String.to_integer(task_id))
+
       project_id ->
         ActivityLogs.list_activity_logs(current_scope,
           project_id: String.to_integer(project_id)
         )
 
-      true -> ActivityLogs.list_activity_logs(current_scope)
+      true ->
+        ActivityLogs.list_activity_logs(current_scope)
     end
   end
 
   defp page_title(%{"task_id" => _}), do: "Activity logs for task"
   defp page_title(%{"project_id" => _}), do: "Activity logs for project"
   defp page_title(_), do: "Listing Activity logs"
-  end
 end
