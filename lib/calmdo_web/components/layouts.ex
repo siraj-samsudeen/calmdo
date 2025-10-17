@@ -41,7 +41,11 @@ defmodule CalmdoWeb.Layouts do
     ~H"""
     <header class="navbar fixed inset-x-0 top-0 z-30 border-b border-base-300 bg-base-100">
       <div class="flex items-center gap-2 px-4 sm:px-6 lg:px-8 w-full">
-        <label for="layout-drawer" class="btn btn-ghost btn-square lg:hidden" aria-label="Toggle sidebar">
+        <label
+          for="layout-drawer"
+          class="btn btn-ghost btn-square lg:hidden"
+          aria-label="Toggle sidebar"
+        >
           <.icon name="hero-bars-3" class="size-5" />
         </label>
         <.link href={~p"/"} class="btn btn-ghost text-lg font-semibold normal-case">
@@ -63,7 +67,10 @@ defmodule CalmdoWeb.Layouts do
                   {display_user_email(@current_scope.user)}
                 </span>
               </label>
-              <ul tabindex="0" class="menu dropdown-content mt-3 w-56 rounded-box bg-base-100 p-2 shadow">
+              <ul
+                tabindex="0"
+                class="menu dropdown-content mt-3 w-56 rounded-box bg-base-100 p-2 shadow"
+              >
                 <li class="menu-title">{display_user_email(@current_scope.user)}</li>
                 <li><.link href={~p"/users/settings"}>Settings</.link></li>
                 <li><.link href={~p"/users/log-out"} method="delete">Log out</.link></li>
@@ -98,7 +105,9 @@ defmodule CalmdoWeb.Layouts do
           <aside class="flex h-full w-72 flex-col border-r border-base-300 bg-base-200 px-4 py-6">
             <nav class="flex flex-1 flex-col gap-8">
               <section class="space-y-3">
-                <h2 class="px-3 text-xs font-semibold uppercase tracking-wide opacity-60">Projects</h2>
+                <h2 class="px-3 text-xs font-semibold uppercase tracking-wide opacity-60">
+                  Projects
+                </h2>
                 <ul class="space-y-2">
                   <li>
                     <.link href={~p"/projects"} class="btn btn-ghost btn-block justify-start">
@@ -111,7 +120,10 @@ defmodule CalmdoWeb.Layouts do
                     </.link>
                   </li>
                   <li :for={project <- @projects}>
-                    <.link href={~p"/projects/#{project}"} class="btn btn-ghost btn-block justify-start truncate">
+                    <.link
+                      href={~p"/projects/#{project}"}
+                      class="btn btn-ghost btn-block justify-start truncate"
+                    >
                       {project.name}
                     </.link>
                   </li>

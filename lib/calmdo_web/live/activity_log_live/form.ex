@@ -48,8 +48,18 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
 
           <div :if={@creating_task?} class="mt-3 space-y-3">
             <input type="hidden" name="creating_task" value="true" />
-            <.input name="new_task[title]" type="text" label="New task title" />
-            <.input name="new_task[notes]" type="textarea" label="New task notes" />
+            <.input
+              name="new_task[title]"
+              type="text"
+              label="New task title"
+              value={Map.get(@new_task_params, "title") || ""}
+            />
+            <.input
+              name="new_task[notes]"
+              type="textarea"
+              label="New task notes"
+              value={Map.get(@new_task_params, "notes") || ""}
+            />
           </div>
         </div>
         <.input field={@form[:duration_in_hours]} type="number" label="Duration in hours" />
@@ -73,6 +83,7 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
     {:ok,
      socket
      |> assign(:creating_task?, false)
+     |> assign(:new_task_params, %{})
      |> assign(:return_to, return_to(params["return_to"]))
      |> assign(:projects, Enum.map(projects, &{&1.name, &1.id}))
      |> assign(:tasks, Enum.map(tasks, &{&1.title, &1.id}))
@@ -140,7 +151,9 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
     end
   end
 
-  def handle_event("validate", %{"activity_log" => activity_log_params}, socket) do
+  def handle_event("validate", %{"activity_log" => activity_log_params} = params, socket) do
+    new_task_params = Map.get(params, "new_task", socket.assigns.new_task_params) || %{}
+
     changeset =
       ActivityLogs.change_activity_log(
         socket.assigns.current_scope,
@@ -148,14 +161,30 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
         activity_log_params
       )
 
-    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+    {:noreply,
+     socket
+     |> assign(:new_task_params, new_task_params)
+     |> assign(:form, to_form(changeset, action: :validate))}
   end
 
   def handle_event("save", params, socket) do
     %{"activity_log" => activity_log_params} = params
-    new_task_params = Map.get(params, "new_task", %{})
+    new_task_params = Map.get(params, "new_task", %{}) || %{}
+
+    socket = assign(socket, :new_task_params, new_task_params)
 
     save_activity_log(socket, socket.assigns.live_action, activity_log_params, new_task_params)
+  end
+
+  @impl true
+  def handle_event("toggle_new_task", _params, socket) do
+    creating_task? = !socket.assigns.creating_task?
+    new_task_params = if creating_task?, do: socket.assigns.new_task_params, else: %{}
+
+    {:noreply,
+     socket
+     |> assign(:creating_task?, creating_task?)
+     |> assign(:new_task_params, new_task_params)}
   end
 
   defp save_activity_log(socket, :edit, activity_log_params, _new_task_params) do
@@ -233,11 +262,6 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
 
   defp return_path(_scope, "index", _activity_log), do: ~p"/activity_logs"
   defp return_path(_scope, "show", activity_log), do: ~p"/activity_logs/#{activity_log}"
-
-  @impl true
-  def handle_event("toggle_new_task", _params, socket) do
-    {:noreply, assign(socket, :creating_task?, !socket.assigns.creating_task?)}
-  end
 
   @impl true
   def handle_info({:flash_error, msg}, socket) do

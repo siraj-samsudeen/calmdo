@@ -39,116 +39,43 @@ defmodule CalmdoWeb.TaskLive.Index do
       </.form>
 
       <div class="space-y-8">
-        <div>
-          <h2 class="mb-2 text-sm font-semibold">Started</h2>
-          <.table
-            id="tasks-started"
-            rows={@streams.tasks_started}
-            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
-          >
-            <:col :let={{_id, task}} label="Title">{task.title}</:col>
-            <:col :let={{_id, task}} label="Project">{task.project && task.project.name}</:col>
-            <:col :let={{_id, task}} label="Assignee">{task.assignee && task.assignee.email}</:col>
-            <:col :let={{_id, task}} label="Priority">{task.priority}</:col>
-            <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
-            <:col :let={{_id, task}} label="Hours">
-              <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
-                {format_hours(total_hours(task))}
-              </.link>
-            </:col>
-            <:action :let={{_id, task}}>
-              <.link navigate={log_time_path(task)}>Log Time</.link>
-            </:action>
-            <:action :let={{_id, task}}>
-              <div class="sr-only">
-                <.link navigate={~p"/tasks/#{task}"}>Show</.link>
-              </div>
-              <.link navigate={~p"/tasks/#{task}/edit"}>Edit</.link>
-            </:action>
-            <:action :let={{id, task}}>
-              <.link
-                phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{id}")}
-                data-confirm="Are you sure?"
-              >
-                Delete
-              </.link>
-            </:action>
-          </.table>
-        </div>
-
-        <div>
-          <h2 class="mb-2 text-sm font-semibold">Work In Progress</h2>
-          <.table
-            id="tasks-wip"
-            rows={@streams.tasks_work_in_progress}
-            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
-          >
-            <:col :let={{_id, task}} label="Title">{task.title}</:col>
-            <:col :let={{_id, task}} label="Project">{task.project && task.project.name}</:col>
-            <:col :let={{_id, task}} label="Assignee">{task.assignee && task.assignee.email}</:col>
-            <:col :let={{_id, task}} label="Priority">{task.priority}</:col>
-            <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
-            <:col :let={{_id, task}} label="Hours">
-              <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
-                {format_hours(total_hours(task))}
-              </.link>
-            </:col>
-            <:action :let={{_id, task}}>
-              <.link navigate={log_time_path(task)}>Log Time</.link>
-            </:action>
-            <:action :let={{_id, task}}>
-              <div class="sr-only">
-                <.link navigate={~p"/tasks/#{task}"}>Show</.link>
-              </div>
-              <.link navigate={~p"/tasks/#{task}/edit"}>Edit</.link>
-            </:action>
-            <:action :let={{id, task}}>
-              <.link
-                phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{id}")}
-                data-confirm="Are you sure?"
-              >
-                Delete
-              </.link>
-            </:action>
-          </.table>
-        </div>
-
-        <div>
-          <h2 class="mb-2 text-sm font-semibold">Completed</h2>
-          <.table
-            id="tasks-completed"
-            rows={@streams.tasks_completed}
-            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
-          >
-            <:col :let={{_id, task}} label="Title">{task.title}</:col>
-            <:col :let={{_id, task}} label="Project">{task.project && task.project.name}</:col>
-            <:col :let={{_id, task}} label="Assignee">{task.assignee && task.assignee.email}</:col>
-            <:col :let={{_id, task}} label="Priority">{task.priority}</:col>
-            <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
-            <:col :let={{_id, task}} label="Hours">
-              <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
-                {format_hours(total_hours(task))}
-              </.link>
-            </:col>
-            <:action :let={{_id, task}}>
-              <.link navigate={log_time_path(task)}>Log Time</.link>
-            </:action>
-            <:action :let={{_id, task}}>
-              <div class="sr-only">
-                <.link navigate={~p"/tasks/#{task}"}>Show</.link>
-              </div>
-              <.link navigate={~p"/tasks/#{task}/edit"}>Edit</.link>
-            </:action>
-            <:action :let={{id, task}}>
-              <.link
-                phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{id}")}
-                data-confirm="Are you sure?"
-              >
-                Delete
-              </.link>
-            </:action>
-          </.table>
-        </div>
+        <p :if={@tasks_empty?} class="text-sm text-base-content/70">
+          No tasks match the current filters.
+        </p>
+        <.table
+          id="tasks"
+          rows={@streams.tasks}
+          row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
+        >
+          <:col :let={{_id, task}} label="Title">{task.title}</:col>
+          <:col :let={{_id, task}} label="Project">{task.project && task.project.name}</:col>
+          <:col :let={{_id, task}} label="Assignee">{task.assignee && task.assignee.email}</:col>
+          <:col :let={{_id, task}} label="Status">{format_status(task.status)}</:col>
+          <:col :let={{_id, task}} label="Priority">{task.priority}</:col>
+          <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
+          <:col :let={{_id, task}} label="Hours">
+            <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
+              {format_hours(total_hours(task))}
+            </.link>
+          </:col>
+          <:action :let={{_id, task}}>
+            <.link navigate={log_time_path(task)}>Log Time</.link>
+          </:action>
+          <:action :let={{_id, task}}>
+            <div class="sr-only">
+              <.link navigate={~p"/tasks/#{task}"}>Show</.link>
+            </div>
+            <.link navigate={~p"/tasks/#{task}/edit"}>Edit</.link>
+          </:action>
+          <:action :let={{id, task}}>
+            <.link
+              phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{id}")}
+              data-confirm="Are you sure?"
+            >
+              Delete
+            </.link>
+          </:action>
+        </.table>
       </div>
     </Layouts.app>
     """
@@ -174,10 +101,8 @@ defmodule CalmdoWeb.TaskLive.Index do
       |> assign(:statuses, Ecto.Enum.values(Calmdo.Tasks.Task, :status))
       |> assign(:assignees, Calmdo.Accounts.list_users())
       |> assign(:filters, %{status: nil, assignee_id: nil})
-      |> stream_configure(:tasks_started, dom_id: &"tasks-started-#{&1.id}")
-      |> stream_configure(:tasks_work_in_progress, dom_id: &"tasks-work_in_progress-#{&1.id}")
-      |> stream_configure(:tasks_completed, dom_id: &"tasks-completed-#{&1.id}")
-      |> assign_task_groups()
+      |> stream_configure(:tasks, dom_id: &"task-#{&1.id}")
+      |> assign_tasks()
 
     {:ok, socket}
   end
@@ -186,24 +111,29 @@ defmodule CalmdoWeb.TaskLive.Index do
   def handle_event("delete", %{"id" => id}, socket) do
     task = Tasks.get_task!(socket.assigns.current_scope, id)
 
-    stream_name =
-      case task.status do
-        :started -> :tasks_started
-        :work_in_progress -> :tasks_work_in_progress
-        :completed -> :tasks_completed
-      end
-
     {:ok, _} = Tasks.delete_task(socket.assigns.current_scope, task)
-    {:noreply, stream_delete(socket, stream_name, task)}
+    {:noreply, assign_tasks(socket)}
+  end
+
+  @impl true
+  def handle_event("filter", params, socket) do
+    filters = %{
+      status: Map.get(params, "status"),
+      assignee_id: Map.get(params, "assignee_id")
+    }
+
+    {:noreply, socket |> assign(:filters, filters) |> assign_tasks()}
   end
 
   @impl true
   def handle_info({type, %Calmdo.Tasks.Task{}}, socket)
       when type in [:created, :updated, :deleted] do
-    {:noreply, assign_task_groups(socket)}
+    {:noreply, assign_tasks(socket)}
   end
 
-  defp list_tasks(current_scope, filters \\ %{status: nil, assignee_id: nil}) do
+  defp list_tasks(current_scope, filters) do
+    filters = filters || %{status: nil, assignee_id: nil}
+
     status =
       if is_nil(filters.status) or filters.status == "",
         do: nil,
@@ -233,6 +163,7 @@ defmodule CalmdoWeb.TaskLive.Index do
     |> to_string()
   end
 
+  defp format_status(nil), do: "Not set"
   defp format_status(:work_in_progress), do: "Work In Progress"
 
   defp format_status(atom) when is_atom(atom) do
@@ -244,26 +175,11 @@ defmodule CalmdoWeb.TaskLive.Index do
     |> Enum.join(" ")
   end
 
-  @impl true
-  def handle_event("filter", params, socket) do
-    filters = %{
-      status: Map.get(params, "status"),
-      assignee_id: Map.get(params, "assignee_id")
-    }
-
-    {:noreply, socket |> assign(:filters, filters) |> assign_task_groups()}
-  end
-
-  defp assign_task_groups(socket) do
+  defp assign_tasks(socket) do
     tasks = list_tasks(socket.assigns.current_scope, socket.assigns.filters)
 
-    started = Enum.filter(tasks, &(&1.status == :started))
-    wip = Enum.filter(tasks, &(&1.status == :work_in_progress))
-    completed = Enum.filter(tasks, &(&1.status == :completed))
-
     socket
-    |> stream(:tasks_started, started, reset: true)
-    |> stream(:tasks_work_in_progress, wip, reset: true)
-    |> stream(:tasks_completed, completed, reset: true)
+    |> assign(:tasks_empty?, tasks == [])
+    |> stream(:tasks, tasks, reset: true)
   end
 end

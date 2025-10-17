@@ -37,22 +37,17 @@ defmodule Calmdo.ActivityLogs do
 
   """
   def list_activity_logs(%Scope{} = _scope) do
-    query =
-      from al in ActivityLog,
-        preload: [:task, :project]
-
-    Repo.all(query)
+    base_activity_log_query()
+    |> Repo.all()
   end
 
   def list_activity_logs(%Scope{} = _scope, opts) when is_list(opts) do
     task_id = Keyword.get(opts, :task_id)
     project_id = Keyword.get(opts, :project_id)
 
-    from(al in ActivityLog,
-      preload: [:task, :project],
-      where: is_nil(^task_id) or al.task_id == ^task_id,
-      where: is_nil(^project_id) or al.project_id == ^project_id
-    )
+    base_activity_log_query()
+    |> maybe_filter_task(task_id)
+    |> maybe_filter_project(project_id)
     |> Repo.all()
   end
 
@@ -166,5 +161,24 @@ defmodule Calmdo.ActivityLogs do
     true = activity_log.logged_by_id == scope.user.id
 
     ActivityLog.changeset(activity_log, attrs, scope)
+  end
+
+  defp base_activity_log_query do
+    from al in ActivityLog,
+      preload: [:task, :project]
+  end
+
+  defp maybe_filter_task(query, nil), do: query
+
+  defp maybe_filter_task(query, task_id) do
+    from al in query,
+      where: al.task_id == ^task_id
+  end
+
+  defp maybe_filter_project(query, nil), do: query
+
+  defp maybe_filter_project(query, project_id) do
+    from al in query,
+      where: al.project_id == ^project_id
   end
 end
