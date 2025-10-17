@@ -19,16 +19,12 @@ defmodule Calmdo.ActivityLogs do
     * {:deleted, %ActivityLog{}}
 
   """
-  def subscribe_activity_logs(%Scope{} = scope) do
-    key = scope.user.id
-
-    Phoenix.PubSub.subscribe(Calmdo.PubSub, "user:#{key}:activity_logs")
+  def subscribe_activity_logs(%Scope{} = _scope) do
+    Phoenix.PubSub.subscribe(Calmdo.PubSub, "activity_logs")
   end
 
-  defp broadcast_activity_log(%Scope{} = scope, message) do
-    key = scope.user.id
-
-    Phoenix.PubSub.broadcast(Calmdo.PubSub, "user:#{key}:activity_logs", message)
+  defp broadcast_activity_log(%Scope{} = _scope, message) do
+    Phoenix.PubSub.broadcast(Calmdo.PubSub, "activity_logs", message)
   end
 
   @doc """
@@ -40,13 +36,24 @@ defmodule Calmdo.ActivityLogs do
       [%ActivityLog{}, ...]
 
   """
-  def list_activity_logs(%Scope{} = scope) do
+  def list_activity_logs(%Scope{} = _scope) do
     query =
       from al in ActivityLog,
-        where: al.logged_by_id == ^scope.user.id,
         preload: [:task, :project]
 
     Repo.all(query)
+  end
+
+  def list_activity_logs(%Scope{} = _scope, opts) when is_list(opts) do
+    task_id = Keyword.get(opts, :task_id)
+    project_id = Keyword.get(opts, :project_id)
+
+    from(al in ActivityLog,
+      preload: [:task, :project],
+      where: is_nil(^task_id) or al.task_id == ^task_id,
+      where: is_nil(^project_id) or al.project_id == ^project_id
+    )
+    |> Repo.all()
   end
 
   @doc """
@@ -63,10 +70,19 @@ defmodule Calmdo.ActivityLogs do
       ** (Ecto.NoResultsError)
 
   """
-  def get_activity_log!(%Scope{} = scope, id) do
+  def get_activity_log!(%Scope{} = _scope, id) do
     ActivityLog
-    |> Repo.get_by!(id: id, logged_by_id: scope.user.id)
+    |> Repo.get!(id)
     |> Repo.preload([:task, :project])
+  end
+
+  def list_activity_logs_for_project(%Scope{} = _scope, project_id) do
+    from(al in ActivityLog,
+      left_join: t in assoc(al, :task),
+      where: al.project_id == ^project_id or t.project_id == ^project_id,
+      preload: [:project, :task]
+    )
+    |> Repo.all()
   end
 
   @doc """

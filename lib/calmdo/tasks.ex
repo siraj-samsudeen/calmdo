@@ -19,16 +19,12 @@ defmodule Calmdo.Tasks do
     * {:deleted, %Task{}}
 
   """
-  def subscribe_tasks(%Scope{} = scope) do
-    key = scope.user.id
-
-    Phoenix.PubSub.subscribe(Calmdo.PubSub, "user:#{key}:tasks")
+  def subscribe_tasks(%Scope{} = _scope) do
+    Phoenix.PubSub.subscribe(Calmdo.PubSub, "tasks")
   end
 
-  defp broadcast_task(%Scope{} = scope, message) do
-    key = scope.user.id
-
-    Phoenix.PubSub.broadcast(Calmdo.PubSub, "user:#{key}:tasks", message)
+  defp broadcast_task(%Scope{} = _scope, message) do
+    Phoenix.PubSub.broadcast(Calmdo.PubSub, "tasks", message)
   end
 
   @doc """
@@ -40,13 +36,24 @@ defmodule Calmdo.Tasks do
       [%Task{}, ...]
 
   """
-  def list_tasks(%Scope{} = scope) do
+  def list_tasks(%Scope{} = _scope) do
     query =
       from t in Task,
-        where: t.created_by_id == ^scope.user.id,
-        preload: [:project]
+        preload: [:project, :activity_logs, :assignee]
 
     Repo.all(query)
+  end
+
+  def list_tasks(%Scope{} = _scope, opts) when is_list(opts) do
+    status = Keyword.get(opts, :status)
+    assignee_id = Keyword.get(opts, :assignee_id)
+
+    from(t in Task,
+      preload: [:project, :activity_logs, :assignee],
+      where: is_nil(^status) or t.status == ^status,
+      where: is_nil(^assignee_id) or t.assignee_id == ^assignee_id
+    )
+    |> Repo.all()
   end
 
   @doc """
@@ -63,8 +70,8 @@ defmodule Calmdo.Tasks do
       ** (Ecto.NoResultsError)
 
   """
-  def get_task!(%Scope{} = scope, id) do
-    Repo.get_by!(Task, id: id, created_by_id: scope.user.id)
+  def get_task!(%Scope{} = _scope, id) do
+    Repo.get!(Task, id)
   end
 
   @doc """
@@ -163,16 +170,12 @@ defmodule Calmdo.Tasks do
     * {:deleted, %Project{}}
 
   """
-  def subscribe_projects(%Scope{} = scope) do
-    key = scope.user.id
-
-    Phoenix.PubSub.subscribe(Calmdo.PubSub, "user:#{key}:projects")
+  def subscribe_projects(%Scope{} = _scope) do
+    Phoenix.PubSub.subscribe(Calmdo.PubSub, "projects")
   end
 
-  defp broadcast_project(%Scope{} = scope, message) do
-    key = scope.user.id
-
-    Phoenix.PubSub.broadcast(Calmdo.PubSub, "user:#{key}:projects", message)
+  defp broadcast_project(%Scope{} = _scope, message) do
+    Phoenix.PubSub.broadcast(Calmdo.PubSub, "projects", message)
   end
 
   @doc """
@@ -184,8 +187,8 @@ defmodule Calmdo.Tasks do
       [%Project{}, ...]
 
   """
-  def list_projects(%Scope{} = scope) do
-    Repo.all_by(Project, owner_id: scope.user.id)
+  def list_projects(%Scope{} = _scope) do
+    Repo.all(Project)
   end
 
   @doc """
@@ -202,8 +205,8 @@ defmodule Calmdo.Tasks do
       ** (Ecto.NoResultsError)
 
   """
-  def get_project!(%Scope{} = scope, id) do
-    Repo.get_by!(Project, id: id, owner_id: scope.user.id)
+  def get_project!(%Scope{} = _scope, id) do
+    Repo.get!(Project, id)
   end
 
   @doc """
@@ -287,5 +290,13 @@ defmodule Calmdo.Tasks do
     true = project.owner_id == scope.user.id
 
     Project.changeset(project, attrs, scope)
+  end
+
+  def list_tasks_for_project(%Scope{} = _scope, project_id) do
+    from(t in Task,
+      where: t.project_id == ^project_id,
+      preload: [:project, :activity_logs, :assignee]
+    )
+    |> Repo.all()
   end
 end
