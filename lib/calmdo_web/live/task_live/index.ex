@@ -27,6 +27,11 @@ defmodule CalmdoWeb.TaskLive.Index do
         <:col :let={{_id, task}} label="Status">{task.status}</:col>
         <:col :let={{_id, task}} label="Priority">{task.priority}</:col>
         <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
+        <:col :let={{_id, task}} label="Hours">
+          <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
+            {format_hours(total_hours(task))}
+          </.link>
+        </:col>
         <:action :let={{_id, task}}>
           <.link navigate={log_time_path(task)}>Log Time</.link>
         </:action>
@@ -85,5 +90,17 @@ defmodule CalmdoWeb.TaskLive.Index do
 
   defp list_tasks(current_scope) do
     Tasks.list_tasks(current_scope)
+  end
+
+  defp total_hours(task) do
+    Enum.reduce(task.activity_logs || [], 0, fn al, acc ->
+      (al.duration_in_hours || 0) + (acc + ((al.duration_in_minutes || 0) / 60))
+    end)
+  end
+
+  defp format_hours(value) when is_number(value) do
+    value
+    |> Float.round(2)
+    |> to_string()
   end
 end

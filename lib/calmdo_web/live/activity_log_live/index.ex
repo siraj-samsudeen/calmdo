@@ -51,15 +51,15 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     if connected?(socket) do
       ActivityLogs.subscribe_activity_logs(socket.assigns.current_scope)
     end
 
     {:ok,
      socket
-     |> assign(:page_title, "Listing Activity logs")
-     |> stream(:activity_logs, list_activity_logs(socket.assigns.current_scope))}
+     |> assign(:page_title, page_title(params))
+     |> stream(:activity_logs, list_activity_logs(socket.assigns.current_scope, params))}
   end
 
   @impl true
@@ -77,7 +77,23 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
      stream(socket, :activity_logs, list_activity_logs(socket.assigns.current_scope), reset: true)}
   end
 
-  defp list_activity_logs(current_scope) do
-    ActivityLogs.list_activity_logs(current_scope)
+  defp list_activity_logs(current_scope, params \\ %{}) do
+    task_id = Map.get(params, "task_id")
+    project_id = Map.get(params, "project_id")
+
+    cond do
+      task_id -> ActivityLogs.list_activity_logs(current_scope, task_id: String.to_integer(task_id))
+      project_id ->
+        ActivityLogs.list_activity_logs(current_scope,
+          project_id: String.to_integer(project_id)
+        )
+
+      true -> ActivityLogs.list_activity_logs(current_scope)
+    end
+  end
+
+  defp page_title(%{"task_id" => _}), do: "Activity logs for task"
+  defp page_title(%{"project_id" => _}), do: "Activity logs for project"
+  defp page_title(_), do: "Listing Activity logs"
   end
 end

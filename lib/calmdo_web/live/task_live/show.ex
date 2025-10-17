@@ -26,6 +26,11 @@ defmodule CalmdoWeb.TaskLive.Show do
         <:item title="Status">{@task.status}</:item>
         <:item title="Priority">{@task.priority}</:item>
         <:item title="Due date">{@task.due_date}</:item>
+        <:item title="Hours Logged">
+          <.link navigate={~p"/activity_logs?task_id=#{@task.id}"} class="link">
+            {format_hours(total_hours(@task))}
+          </.link>
+        </:item>
       </.list>
     </Layouts.app>
     """
@@ -37,10 +42,14 @@ defmodule CalmdoWeb.TaskLive.Show do
       Tasks.subscribe_tasks(socket.assigns.current_scope)
     end
 
+    task =
+      Tasks.get_task!(socket.assigns.current_scope, id)
+      |> Calmdo.Repo.preload(:activity_logs)
+
     {:ok,
      socket
      |> assign(:page_title, "Show Task")
-     |> assign(:task, Tasks.get_task!(socket.assigns.current_scope, id))}
+     |> assign(:task, task)}
   end
 
   @impl true
@@ -64,5 +73,17 @@ defmodule CalmdoWeb.TaskLive.Show do
   def handle_info({type, %Calmdo.Tasks.Task{}}, socket)
       when type in [:created, :updated, :deleted] do
     {:noreply, socket}
+  end
+
+  defp total_hours(task) do
+    Enum.reduce(task.activity_logs || [], 0, fn al, acc ->
+      (al.duration_in_hours || 0) + (acc + ((al.duration_in_minutes || 0) / 60))
+    end)
+  end
+
+  defp format_hours(value) when is_number(value) do
+    value
+    |> Float.round(2)
+    |> to_string()
   end
 end
