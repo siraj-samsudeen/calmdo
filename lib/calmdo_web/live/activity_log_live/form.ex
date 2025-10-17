@@ -34,8 +34,24 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
           label="Task"
           prompt="Choose a task"
           options={@tasks}
+          disabled={@creating_task?}
           phx-change="task_selected"
         />
+
+        <div class="rounded-lg border border-slate-200 p-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold">Create a new task instead</h3>
+            <button type="button" class="btn btn-sm" phx-click="toggle_new_task">
+              {if @creating_task?, do: "Cancel", else: "Create new task"}
+            </button>
+          </div>
+
+          <div :if={@creating_task?} class="mt-3 space-y-3">
+            <input type="hidden" name="creating_task" value="true" />
+            <.input name="new_task[title]" type="text" label="New task title" />
+            <.input name="new_task[notes]" type="textarea" label="New task notes" />
+          </div>
+        </div>
         <.input field={@form[:duration_in_hours]} type="number" label="Duration in hours" />
         <.input field={@form[:duration_in_minutes]} type="number" label="Duration in minutes" />
         <.input field={@form[:notes]} type="textarea" label="Notes" />
@@ -56,6 +72,7 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
 
     {:ok,
      socket
+     |> assign(:creating_task?, false)
      |> assign(:return_to, return_to(params["return_to"]))
      |> assign(:projects, Enum.map(projects, &{&1.name, &1.id}))
      |> assign(:tasks, Enum.map(tasks, &{&1.title, &1.id}))
@@ -134,11 +151,14 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
-  def handle_event("save", %{"activity_log" => activity_log_params}, socket) do
-    save_activity_log(socket, socket.assigns.live_action, activity_log_params)
+  def handle_event("save", params, socket) do
+    %{"activity_log" => activity_log_params} = params
+    new_task_params = Map.get(params, "new_task", %{})
+
+    save_activity_log(socket, socket.assigns.live_action, activity_log_params, new_task_params)
   end
 
-  defp save_activity_log(socket, :edit, activity_log_params) do
+  defp save_activity_log(socket, :edit, activity_log_params, _new_task_params) do
     case ActivityLogs.update_activity_log(
            socket.assigns.current_scope,
            socket.assigns.activity_log,
@@ -157,7 +177,45 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
     end
   end
 
-  defp save_activity_log(socket, :new, activity_log_params) do
+  defp save_activity_log(socket, :new, activity_log_params, new_task_params) do
+    activity_log_params =
+      case Map.get(activity_log_params, "task_id") do
+        "" -> Map.put(activity_log_params, "task_id", nil)
+        other -> other && activity_log_params
+      end
+
+    activity_log_params =
+      if Map.get(activity_log_params, "project_id") == "" do
+        Map.put(activity_log_params, "project_id", nil)
+      else
+        activity_log_params
+      end
+
+    activity_log_params =
+      if Map.get(new_task_params, "title") && socket.assigns.creating_task? do
+        title = String.trim(new_task_params["title"])
+        notes = new_task_params["notes"]
+
+        if title == "" do
+          send(self(), {:flash_error, "Enter a title for the new task"})
+          activity_log_params
+        else
+          project_id = activity_log_params["project_id"]
+          {:ok, task} =
+            Calmdo.Tasks.create_task(socket.assigns.current_scope, %{
+              "title" => title,
+              "notes" => notes,
+              "project_id" => project_id
+            })
+
+          activity_log_params
+          |> Map.put("task_id", task.id)
+          |> Map.put("project_id", task.project_id)
+        end
+      else
+        activity_log_params
+      end
+
     case ActivityLogs.create_activity_log(socket.assigns.current_scope, activity_log_params) do
       {:ok, activity_log} ->
         {:noreply,
@@ -174,4 +232,14 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
 
   defp return_path(_scope, "index", _activity_log), do: ~p"/activity_logs"
   defp return_path(_scope, "show", activity_log), do: ~p"/activity_logs/#{activity_log}"
+
+  @impl true
+  def handle_event("toggle_new_task", _params, socket) do
+    {:noreply, assign(socket, :creating_task?, !socket.assigns.creating_task?)}
+  end
+
+  @impl true
+  def handle_info({:flash_error, msg}, socket) do
+    {:noreply, put_flash(socket, :error, msg)}
+  end
 end
