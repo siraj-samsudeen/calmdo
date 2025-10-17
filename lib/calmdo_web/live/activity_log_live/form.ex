@@ -208,28 +208,24 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
 
   defp save_activity_log(socket, :new, activity_log_params, new_task_params) do
     activity_log_params =
-      case Map.get(activity_log_params, "task_id") do
-        "" -> Map.put(activity_log_params, "task_id", nil)
-        other -> other && activity_log_params
-      end
+      activity_log_params
+      |> blank_to_nil("task_id")
+      |> blank_to_nil("project_id")
 
     activity_log_params =
-      if Map.get(activity_log_params, "project_id") == "" do
-        Map.put(activity_log_params, "project_id", nil)
-      else
-        activity_log_params
-      end
+      if socket.assigns.creating_task? do
+        title =
+          new_task_params
+          |> Map.get("title", "")
+          |> String.trim()
 
-    activity_log_params =
-      if Map.get(new_task_params, "title") && socket.assigns.creating_task? do
-        title = String.trim(new_task_params["title"])
-        notes = new_task_params["notes"]
+        notes = Map.get(new_task_params, "notes", "")
 
         if title == "" do
           send(self(), {:flash_error, "Enter a title for the new task"})
           activity_log_params
         else
-          project_id = activity_log_params["project_id"]
+          project_id = Map.get(activity_log_params, "project_id")
 
           {:ok, task} =
             Calmdo.Tasks.create_task(socket.assigns.current_scope, %{
@@ -262,6 +258,13 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
 
   defp return_path(_scope, "index", _activity_log), do: ~p"/activity_logs"
   defp return_path(_scope, "show", activity_log), do: ~p"/activity_logs/#{activity_log}"
+
+  defp blank_to_nil(map, key) when is_map(map) do
+    case Map.get(map, key) do
+      "" -> Map.put(map, key, nil)
+      _ -> map
+    end
+  end
 
   @impl true
   def handle_info({:flash_error, msg}, socket) do

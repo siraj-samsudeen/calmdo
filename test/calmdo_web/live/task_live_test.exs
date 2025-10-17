@@ -43,7 +43,7 @@ defmodule CalmdoWeb.TaskLiveTest do
 
       assert {:ok, form_live, _} =
                index_live
-               |> element("a", "New Task")
+               |> element("main a", "New Task")
                |> render_click()
                |> follow_redirect(conn, ~p"/tasks/new")
 

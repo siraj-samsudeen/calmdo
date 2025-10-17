@@ -39,27 +39,34 @@ defmodule CalmdoWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="navbar fixed inset-x-0 top-0 z-30 border-b border-base-300 bg-base-100">
-      <div class="flex items-center gap-2 px-4 sm:px-6 lg:px-8 w-full">
+    <header class="navbar sticky top-0 z-40 bg-primary text-primary-content shadow">
+      <div class="flex items-center gap-3 px-4 sm:px-6 lg:px-8 w-full">
         <label
           for="layout-drawer"
-          class="btn btn-ghost btn-square lg:hidden"
-          aria-label="Toggle sidebar"
+          class="btn btn-square btn-ghost lg:hidden"
+          aria-label="Toggle menu"
         >
-          <.icon name="hero-bars-3" class="size-5" />
+          <.icon name="hero-bars-3" />
         </label>
-        <.link href={~p"/"} class="btn btn-ghost text-lg font-semibold normal-case">
+        <.link href={~p"/"} class="text-lg font-semibold tracking-tight">
           Calmdo
         </.link>
+        <div class="flex items-center gap-2">
+          <.link href={~p"/tasks/new"} class="btn btn-sm btn-secondary">New Task</.link>
+          <.link
+            href={~p"/activity_logs/new"}
+            class="btn btn-sm btn-outline border-primary-content text-primary-content hover:bg-primary-content/10"
+          >
+            New Log
+          </.link>
+        </div>
         <div class="ml-auto flex items-center gap-3">
-          <div class="hidden md:block">
-            <.theme_toggle />
-          </div>
+          <div class="hidden md:block"><.theme_toggle /></div>
           <%= if @current_scope && @current_scope.user do %>
             <div class="dropdown dropdown-end">
               <label tabindex="0" class="btn btn-ghost gap-2">
                 <div class="avatar placeholder">
-                  <div class="w-8 rounded-full bg-base-300 text-base-content">
+                  <div class="w-8 rounded-full bg-primary-content/20 text-primary-content">
                     <span>{user_initial(@current_scope.user)}</span>
                   </div>
                 </div>
@@ -69,7 +76,7 @@ defmodule CalmdoWeb.Layouts do
               </label>
               <ul
                 tabindex="0"
-                class="menu dropdown-content mt-3 w-56 rounded-box bg-base-100 p-2 shadow"
+                class="menu dropdown-content mt-3 w-56 rounded-box bg-base-100 text-base-content p-2 shadow"
               >
                 <li class="menu-title">{display_user_email(@current_scope.user)}</li>
                 <li><.link href={~p"/users/settings"}>Settings</.link></li>
@@ -78,92 +85,116 @@ defmodule CalmdoWeb.Layouts do
             </div>
           <% else %>
             <div class="flex items-center gap-2">
-              <.link href={~p"/users/log-in"} class="btn btn-sm">Log in</.link>
-              <.link href={~p"/users/register"} class="btn btn-sm btn-primary">Sign up</.link>
+              <.link href={~p"/users/log-in"} class="btn btn-sm btn-ghost text-primary-content">
+                Log in
+              </.link>
+              <.link href={~p"/users/register"} class="btn btn-sm btn-secondary">
+                Sign up
+              </.link>
             </div>
           <% end %>
         </div>
       </div>
     </header>
 
-    <div class="pt-16">
-      <div class="drawer lg:drawer-open min-h-[calc(100vh-4rem)] bg-base-200">
-        <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-content flex min-h-[calc(100vh-4rem)] flex-col">
-          <main class="flex flex-1 flex-col">
-            <div class="flex-1 py-6 lg:py-8">
-              <div class="w-full space-y-6 px-4 sm:px-6 lg:px-8">
-                <div class="rounded-xl border border-base-300 bg-base-100 p-6 shadow-sm">
-                  {render_slot(@inner_block)}
-                </div>
+    <div class="drawer lg:drawer-open min-h-[calc(100vh-4rem)] bg-base-200">
+      <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
+      <div class="drawer-content flex min-h-[calc(100vh-4rem)] flex-col">
+        <main class="flex flex-1 flex-col bg-base-200">
+          <div class="mx-auto flex w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+            <div class="flex-1 space-y-6">
+              <div class="rounded-lg border bg-base-100 p-6 shadow-sm">
+                {render_slot(@inner_block)}
               </div>
             </div>
-          </main>
-        </div>
-        <div class="drawer-side">
-          <label for="layout-drawer" class="drawer-overlay"></label>
-          <aside class="flex h-full w-72 flex-col border-r border-base-300 bg-base-200 px-4 py-6">
-            <nav class="flex flex-1 flex-col gap-8">
-              <section class="space-y-3">
-                <h2 class="px-3 text-xs font-semibold uppercase tracking-wide opacity-60">
-                  Projects
-                </h2>
-                <ul class="space-y-2">
-                  <li>
-                    <.link href={~p"/projects"} class="btn btn-ghost btn-block justify-start">
-                      All Projects
-                    </.link>
-                  </li>
-                  <li>
-                    <.link href={~p"/projects"} class="btn btn-ghost btn-block justify-start">
-                      My Projects
-                    </.link>
-                  </li>
-                  <li :for={project <- @projects}>
-                    <.link
-                      href={~p"/projects/#{project}"}
-                      class="btn btn-ghost btn-block justify-start truncate"
-                    >
-                      {project.name}
-                    </.link>
-                  </li>
-                </ul>
-              </section>
+          </div>
+        </main>
+      </div>
+      <div class="drawer-side">
+        <label for="layout-drawer" class="drawer-overlay"></label>
+        <aside class="flex h-full w-72 flex-col border-r bg-base-100 text-sm">
+          <nav class="flex flex-1 flex-col gap-6 px-4 py-6">
+            <section>
+              <h2 class="mb-2 px-2 text-xs font-semibold uppercase opacity-60">Actions</h2>
+              <ul class="space-y-1">
+                <li>
+                  <.link href={~p"/tasks"} class="btn btn-ghost btn-block justify-start">Next</.link>
+                </li>
+                <li>
+                  <.link
+                    href={~p"/tasks?status=not_started"}
+                    class="btn btn-ghost btn-block justify-start"
+                  >
+                    Not started
+                  </.link>
+                </li>
+                <li>
+                  <.link
+                    href={~p"/tasks?status=started"}
+                    class="btn btn-ghost btn-block justify-start"
+                  >
+                    Started
+                  </.link>
+                </li>
+                <li>
+                  <.link
+                    href={~p"/tasks?status=work_in_progress"}
+                    class="btn btn-ghost btn-block justify-start"
+                  >
+                    Work In Progress
+                  </.link>
+                </li>
+                <li>
+                  <.link
+                    href={~p"/tasks?status=completed"}
+                    class="btn btn-ghost btn-block justify-start"
+                  >
+                    Completed
+                  </.link>
+                </li>
+              </ul>
+            </section>
 
-              <section class="space-y-3">
-                <h2 class="px-3 text-xs font-semibold uppercase tracking-wide opacity-60">Tasks</h2>
-                <ul class="space-y-2">
-                  <li>
-                    <.link href={~p"/tasks"} class="btn btn-ghost btn-block justify-start">
-                      All Tasks
-                    </.link>
-                  </li>
-                  <li>
-                    <.link href={~p"/tasks"} class="btn btn-ghost btn-block justify-start">
-                      My Tasks
-                    </.link>
-                  </li>
-                </ul>
-              </section>
+            <section>
+              <h2 class="mb-2 px-2 text-xs font-semibold uppercase opacity-60">Projects</h2>
+              <ul class="space-y-1">
+                <li>
+                  <.link href={~p"/projects"} class="btn btn-ghost btn-block justify-start">
+                    All Projects
+                  </.link>
+                </li>
+                <li :for={project <- @projects}>
+                  <.link
+                    href={~p"/projects/#{project}"}
+                    class="btn btn-ghost btn-block justify-start truncate"
+                  >
+                    {project.name}
+                  </.link>
+                </li>
+              </ul>
+            </section>
 
-              <section class="space-y-3">
-                <h2 class="px-3 text-xs font-semibold uppercase tracking-wide opacity-60">Logs</h2>
-                <ul class="space-y-2">
-                  <li>
-                    <.link href={~p"/activity_logs"} class="btn btn-ghost btn-block justify-start">
-                      All Logs
-                    </.link>
-                  </li>
-                  <li>
-                    <.link href={~p"/activity_logs"} class="btn btn-ghost btn-block justify-start">
-                      My Logs
-                    </.link>
-                  </li>
-                </ul>
-              </section>
-            </nav>
-          </aside>
-        </div>
+            <section>
+              <h2 class="mb-2 px-2 text-xs font-semibold uppercase opacity-60">Reference</h2>
+              <ul class="space-y-1">
+                <li>
+                  <.link href={~p"/activity_logs"} class="btn btn-ghost btn-block justify-start">
+                    Activity Logs
+                  </.link>
+                </li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 class="mb-2 px-2 text-xs font-semibold uppercase opacity-60">Tags</h2>
+              <ul class="space-y-1">
+                <li>
+                  <.link href="#" class="btn btn-ghost btn-block justify-start">All Tags</.link>
+                </li>
+              </ul>
+            </section>
+          </nav>
+        </aside>
       </div>
     </div>
 

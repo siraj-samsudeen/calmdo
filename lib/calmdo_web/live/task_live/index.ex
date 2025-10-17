@@ -135,9 +135,29 @@ defmodule CalmdoWeb.TaskLive.Index do
     filters = filters || %{status: nil, assignee_id: nil}
 
     status =
-      if is_nil(filters.status) or filters.status == "",
-        do: nil,
-        else: String.to_existing_atom(to_string(filters.status))
+      case filters.status do
+        nil ->
+          nil
+
+        "" ->
+          nil
+
+        value ->
+          Map.get(
+            %{
+              "not_started" => :not_started,
+              :not_started => :not_started,
+              "started" => :started,
+              :started => :started,
+              "work_in_progress" => :work_in_progress,
+              :work_in_progress => :work_in_progress,
+              "completed" => :completed,
+              :completed => :completed
+            },
+            value,
+            nil
+          )
+      end
 
     assignee_id =
       case filters.assignee_id do
@@ -145,6 +165,12 @@ defmodule CalmdoWeb.TaskLive.Index do
         "" -> nil
         id when is_integer(id) -> id
         id when is_binary(id) -> String.to_integer(id)
+      end
+
+    status =
+      cond do
+        status == :not_started -> nil
+        true -> status
       end
 
     Tasks.list_tasks(current_scope, status: status, assignee_id: assignee_id)
@@ -163,7 +189,7 @@ defmodule CalmdoWeb.TaskLive.Index do
     |> to_string()
   end
 
-  defp format_status(nil), do: "Not set"
+  defp format_status(nil), do: "Not started"
   defp format_status(:work_in_progress), do: "Work In Progress"
 
   defp format_status(atom) when is_atom(atom) do
