@@ -39,163 +39,119 @@ defmodule CalmdoWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <div class="drawer lg:drawer-open min-h-screen bg-[#2f343f] text-slate-100">
-      <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
-      <div class="drawer-content flex min-h-screen flex-col">
-        <header class="sticky top-0 z-20 h-16 border-b border-[#1d4ed8]/60 bg-[#2563eb] text-white shadow-xl">
-          <div class="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-10">
-            <div class="flex-none lg:hidden">
-              <label
-                for="layout-drawer"
-                class="btn btn-ghost btn-square text-white"
-                aria-label="Toggle sidebar"
-              >
-                <.icon name="hero-bars-3" class="size-5" />
+    <header class="navbar fixed inset-x-0 top-0 z-30 border-b border-base-300 bg-base-100">
+      <div class="flex items-center gap-2 px-4 sm:px-6 lg:px-8 w-full">
+        <label for="layout-drawer" class="btn btn-ghost btn-square lg:hidden" aria-label="Toggle sidebar">
+          <.icon name="hero-bars-3" class="size-5" />
+        </label>
+        <.link href={~p"/"} class="btn btn-ghost text-lg font-semibold normal-case">
+          Calmdo
+        </.link>
+        <div class="ml-auto flex items-center gap-3">
+          <div class="hidden md:block">
+            <.theme_toggle />
+          </div>
+          <%= if @current_scope && @current_scope.user do %>
+            <div class="dropdown dropdown-end">
+              <label tabindex="0" class="btn btn-ghost gap-2">
+                <div class="avatar placeholder">
+                  <div class="w-8 rounded-full bg-base-300 text-base-content">
+                    <span>{user_initial(@current_scope.user)}</span>
+                  </div>
+                </div>
+                <span class="hidden sm:inline max-w-[220px] truncate">
+                  {display_user_email(@current_scope.user)}
+                </span>
               </label>
+              <ul tabindex="0" class="menu dropdown-content mt-3 w-56 rounded-box bg-base-100 p-2 shadow">
+                <li class="menu-title">{display_user_email(@current_scope.user)}</li>
+                <li><.link href={~p"/users/settings"}>Settings</.link></li>
+                <li><.link href={~p"/users/log-out"} method="delete">Log out</.link></li>
+              </ul>
             </div>
-            <div class="flex-1">
-              <a
-                href={~p"/"}
-                class="btn btn-ghost text-lg font-semibold normal-case text-white hover:bg-white/10"
-              >
-                Calmdo
-              </a>
+          <% else %>
+            <div class="flex items-center gap-2">
+              <.link href={~p"/users/log-in"} class="btn btn-sm">Log in</.link>
+              <.link href={~p"/users/register"} class="btn btn-sm btn-primary">Sign up</.link>
             </div>
-            <div class="flex items-center gap-3 pr-1">
-              <div class="rounded-full border border-white/40 bg-white/80 px-3 py-1 shadow-sm">
-                <.theme_toggle />
-              </div>
-              <%= if @current_scope && @current_scope.user do %>
-                <div class="dropdown dropdown-end">
-                  <label tabindex="0" class="btn btn-ghost btn-circle avatar placeholder text-white">
-                    <div class="w-10 rounded-full bg-white text-[#2563eb]">
-                      <span>{user_initial(@current_scope.user)}</span>
-                    </div>
-                  </label>
-                  <ul
-                    tabindex="0"
-                    class="menu dropdown-content mt-3 w-56 rounded-box bg-white/95 p-2 text-slate-800 shadow-2xl"
-                  >
-                    <li class="menu-title">{display_user_email(@current_scope.user)}</li>
-                    <li>
-                      <.link href={~p"/users/settings"}>Settings</.link>
-                    </li>
-                    <li>
-                      <.link href={~p"/users/log-out"} method="delete">Log out</.link>
-                    </li>
-                  </ul>
-                </div>
-              <% else %>
-                <div class="flex items-center gap-2">
-                  <.link
-                    href={~p"/users/log-in"}
-                    class="btn btn-sm border border-white/30 bg-white/20 text-white hover:bg-white/30"
-                  >
-                    Log in
-                  </.link>
-                  <.link
-                    href={~p"/users/register"}
-                    class="btn btn-sm border border-white bg-white text-[#2563eb] hover:bg-white/90"
-                  >
-                    Sign up
-                  </.link>
-                </div>
-              <% end %>
-            </div>
-          </div>
-        </header>
-
-        <main class="flex flex-1 flex-col bg-[#2f343f]">
-          <div class="flex-1 py-10 lg:py-14">
-            <div class="mx-auto w-full max-w-6xl space-y-8 px-4 sm:px-6 lg:px-10">
-              <div class="rounded-3xl border border-white/8 bg-white/98 p-10 text-slate-900 shadow-2xl shadow-black/40">
-                {render_slot(@inner_block)}
-              </div>
-            </div>
-          </div>
-        </main>
+          <% end %>
+        </div>
       </div>
-      <div class="drawer-side">
-        <label for="layout-drawer" class="drawer-overlay"></label>
-        <aside class="flex h-full w-72 flex-col border-r border-[#18202f] bg-gradient-to-b from-[#1f2a3a] via-[#253141] to-[#303d4e] px-4 py-10 text-white">
-          <nav class="flex flex-1 flex-col gap-8">
-            <section class="space-y-3">
-              <h2 class="px-3 text-xs font-semibold uppercase tracking-wide text-white/60">
-                Projects
-              </h2>
-              <ul class="space-y-2">
-                <li>
-                  <.link
-                    href={~p"/projects"}
-                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
-                  >
-                    All Projects
-                  </.link>
-                </li>
-                <li>
-                  <.link
-                    href={~p"/projects"}
-                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
-                  >
-                    My Projects
-                  </.link>
-                </li>
-                <li :for={project <- @projects}>
-                  <.link
-                    href={~p"/projects/#{project}"}
-                    class="btn btn-ghost btn-block justify-start truncate rounded-xl border border-transparent text-white hover:border-white/20 hover:bg-white/10"
-                  >
-                    {project.name}
-                  </.link>
-                </li>
-              </ul>
-            </section>
+    </header>
 
-            <section class="space-y-3">
-              <h2 class="px-3 text-xs font-semibold uppercase tracking-wide text-white/60">Tasks</h2>
-              <ul class="space-y-2">
-                <li>
-                  <.link
-                    href={~p"/tasks"}
-                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
-                  >
-                    All Tasks
-                  </.link>
-                </li>
-                <li>
-                  <.link
-                    href={~p"/tasks"}
-                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
-                  >
-                    My Tasks
-                  </.link>
-                </li>
-              </ul>
-            </section>
+    <div class="pt-16">
+      <div class="drawer lg:drawer-open min-h-[calc(100vh-4rem)] bg-base-200">
+        <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content flex min-h-[calc(100vh-4rem)] flex-col">
+          <main class="flex flex-1 flex-col">
+            <div class="flex-1 py-6 lg:py-8">
+              <div class="w-full space-y-6 px-4 sm:px-6 lg:px-8">
+                <div class="rounded-xl border border-base-300 bg-base-100 p-6 shadow-sm">
+                  {render_slot(@inner_block)}
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+        <div class="drawer-side">
+          <label for="layout-drawer" class="drawer-overlay"></label>
+          <aside class="flex h-full w-72 flex-col border-r border-base-300 bg-base-200 px-4 py-6">
+            <nav class="flex flex-1 flex-col gap-8">
+              <section class="space-y-3">
+                <h2 class="px-3 text-xs font-semibold uppercase tracking-wide opacity-60">Projects</h2>
+                <ul class="space-y-2">
+                  <li>
+                    <.link href={~p"/projects"} class="btn btn-ghost btn-block justify-start">
+                      All Projects
+                    </.link>
+                  </li>
+                  <li>
+                    <.link href={~p"/projects"} class="btn btn-ghost btn-block justify-start">
+                      My Projects
+                    </.link>
+                  </li>
+                  <li :for={project <- @projects}>
+                    <.link href={~p"/projects/#{project}"} class="btn btn-ghost btn-block justify-start truncate">
+                      {project.name}
+                    </.link>
+                  </li>
+                </ul>
+              </section>
 
-            <section class="space-y-3">
-              <h2 class="px-3 text-xs font-semibold uppercase tracking-wide text-white/60">Logs</h2>
-              <ul class="space-y-2">
-                <li>
-                  <.link
-                    href={~p"/activity_logs"}
-                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
-                  >
-                    All Logs
-                  </.link>
-                </li>
-                <li>
-                  <.link
-                    href={~p"/activity_logs"}
-                    class="btn btn-ghost btn-block justify-start rounded-xl border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/15"
-                  >
-                    My Logs
-                  </.link>
-                </li>
-              </ul>
-            </section>
-          </nav>
-        </aside>
+              <section class="space-y-3">
+                <h2 class="px-3 text-xs font-semibold uppercase tracking-wide opacity-60">Tasks</h2>
+                <ul class="space-y-2">
+                  <li>
+                    <.link href={~p"/tasks"} class="btn btn-ghost btn-block justify-start">
+                      All Tasks
+                    </.link>
+                  </li>
+                  <li>
+                    <.link href={~p"/tasks"} class="btn btn-ghost btn-block justify-start">
+                      My Tasks
+                    </.link>
+                  </li>
+                </ul>
+              </section>
+
+              <section class="space-y-3">
+                <h2 class="px-3 text-xs font-semibold uppercase tracking-wide opacity-60">Logs</h2>
+                <ul class="space-y-2">
+                  <li>
+                    <.link href={~p"/activity_logs"} class="btn btn-ghost btn-block justify-start">
+                      All Logs
+                    </.link>
+                  </li>
+                  <li>
+                    <.link href={~p"/activity_logs"} class="btn btn-ghost btn-block justify-start">
+                      My Logs
+                    </.link>
+                  </li>
+                </ul>
+              </section>
+            </nav>
+          </aside>
+        </div>
       </div>
     </div>
 

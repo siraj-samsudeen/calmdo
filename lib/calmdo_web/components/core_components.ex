@@ -340,7 +340,8 @@ defmodule CalmdoWeb.CoreComponents do
       end
 
     ~H"""
-    <table class="table bg-white text-slate-900 shadow-sm">
+    <div class="overflow-x-auto">
+    <table class="table w-full bg-base-100 text-base-content">
       <thead class="bg-slate-100 text-slate-600">
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
@@ -375,6 +376,7 @@ defmodule CalmdoWeb.CoreComponents do
         </tr>
       </tbody>
     </table>
+    </div>
     """
   end
 
