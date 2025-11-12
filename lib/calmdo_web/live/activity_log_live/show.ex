@@ -26,9 +26,7 @@ defmodule CalmdoWeb.ActivityLogLive.Show do
       <.list>
         <:item title="Duration in hours">{@activity_log.duration_in_hours}</:item>
         <:item title="Notes">
-          <div class="prose">
-            {raw(Earmark.as_html!(@activity_log.notes))}
-          </div>
+          <.markdown text={@activity_log.notes} />
         </:item>
       </.list>
     </Layouts.app>

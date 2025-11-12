@@ -29,6 +29,8 @@ defmodule CalmdoWeb.CoreComponents do
   use Phoenix.Component
   use Gettext, backend: CalmdoWeb.Gettext
 
+  import Phoenix.HTML, only: [raw: 1]
+
   alias Phoenix.LiveView.JS
 
   @doc """
@@ -483,5 +485,19 @@ defmodule CalmdoWeb.CoreComponents do
   """
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+
+  attr :text, :string, required: true
+  attr :class, :string, default: ""
+
+  def markdown(assigns) do
+    ~H"""
+    <div class={[
+      "prose prose-a:text-primary prose-a:hover:text-primary/70 dark:prose-invert",
+      @class
+    ]}>
+      {raw(Earmark.as_html!(@text))}
+    </div>
+    """
   end
 end

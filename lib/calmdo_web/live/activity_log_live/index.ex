@@ -31,9 +31,7 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
           {activity_log.duration_in_hours}
         </:col>
         <:col :let={{_id, activity_log}} label="Notes">
-          <div class="prose prose-sm text-sm">
-            {raw(Earmark.as_html!(activity_log.notes))}
-          </div>
+          <.markdown text={activity_log.notes} class="prose-sm text-sm" />
         </:col>
         <:action :let={{_id, activity_log}}>
           <div class="sr-only">

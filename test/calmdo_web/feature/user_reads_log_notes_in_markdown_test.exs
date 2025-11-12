@@ -9,9 +9,7 @@ defmodule CalmdoWeb.UserReadsLogNotesInMarkdownTest do
     conn: conn,
     scope: scope
   } do
-    markdown = """
-    [Click here](https://example.com)
-    """
+    markdown = "[Click here](https://example.com)"
 
     activity_log = activity_log_fixture(scope, %{notes: markdown})
 
