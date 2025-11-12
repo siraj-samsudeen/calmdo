@@ -63,7 +63,10 @@ defmodule CalmdoWeb.ProjectLive.Show do
         <div class="space-y-3">
           <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold">Logs</h2>
-            <.link navigate={~p"/activity_logs/new?project_id=#{@project.id}"} class="btn btn-sm">
+            <.link
+              navigate={~p"/activity_logs/new?return_to=projects&project_id=#{@project.id}"}
+              class="btn btn-sm"
+            >
               <.icon name="hero-plus" /> New Log
             </.link>
           </div>
