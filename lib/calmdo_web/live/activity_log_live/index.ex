@@ -30,7 +30,11 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
         <:col :let={{_id, activity_log}} label="Duration in hours">
           {activity_log.duration_in_hours}
         </:col>
-        <:col :let={{_id, activity_log}} label="Notes">{activity_log.notes}</:col>
+        <:col :let={{_id, activity_log}} label="Notes">
+          <div class="prose prose-sm text-sm">
+            {raw(Earmark.as_html!(activity_log.notes))}
+          </div>
+        </:col>
         <:action :let={{_id, activity_log}}>
           <div class="sr-only">
             <.link navigate={~p"/activity_logs/#{activity_log}"}>Show</.link>
