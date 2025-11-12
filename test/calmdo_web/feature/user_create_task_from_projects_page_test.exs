@@ -1,7 +1,6 @@
 defmodule CalmdoWeb.UserCreateTaskFromProjectsPageTest do
   use CalmdoWeb.ConnCase
 
-  import PhoenixTest
   import Calmdo.TasksFixtures
 
   setup :register_and_log_in_user
@@ -15,11 +14,5 @@ defmodule CalmdoWeb.UserCreateTaskFromProjectsPageTest do
     |> create_new_task(name: "some task")
     |> assert_text("some task")
     |> assert_path(~p"/projects/#{project}")
-  end
-
-  defp create_new_task(conn, name: name) do
-    conn
-    |> fill_in("Title", with: name)
-    |> click_button("Save")
   end
 end
