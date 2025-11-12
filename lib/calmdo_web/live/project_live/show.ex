@@ -51,7 +51,9 @@ defmodule CalmdoWeb.ProjectLive.Show do
               </.link>
             </:col>
             <:action :let={{_id, task}}>
-              <.link navigate={~p"/activity_logs/new?task_id=#{task.id}&project_id=#{@project.id}"}>
+              <.link navigate={
+                ~p"/activity_logs/new?return_to=projects&task_id=#{task.id}&project_id=#{@project.id}"
+              }>
                 Log Time
               </.link>
             </:action>
