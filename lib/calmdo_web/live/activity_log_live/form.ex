@@ -64,7 +64,7 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
         </div>
         <.input field={@form[:duration_in_hours]} type="number" label="Duration in hours" />
         <.input field={@form[:duration_in_minutes]} type="number" label="Duration in minutes" />
-        <.input field={@form[:notes]} type="textarea" label="Notes" />
+        <.input field={@form[:notes]} type="textarea" label="Notes" rows="4" />
         <.input field={@form[:billable]} type="checkbox" label="Billable" />
         <footer>
           <.button phx-disable-with="Saving..." variant="primary">Save Activity log</.button>
