@@ -59,6 +59,7 @@ defmodule CalmdoWeb.TaskLive.Form do
   end
 
   defp return_to("show"), do: "show"
+  defp return_to("projects"), do: "projects"
   defp return_to(_), do: "index"
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -70,8 +71,11 @@ defmodule CalmdoWeb.TaskLive.Form do
     |> assign(:form, to_form(Tasks.change_task(socket.assigns.current_scope, task)))
   end
 
-  defp apply_action(socket, :new, _params) do
-    task = %Task{created_by_id: socket.assigns.current_scope.user.id}
+  defp apply_action(socket, :new, params) do
+    task = %Task{
+      created_by_id: socket.assigns.current_scope.user.id,
+      project_id: params["project_id"]
+    }
 
     socket
     |> assign(:page_title, "New Task")
@@ -121,4 +125,5 @@ defmodule CalmdoWeb.TaskLive.Form do
 
   defp return_path(_scope, "index", _task), do: ~p"/tasks"
   defp return_path(_scope, "show", task), do: ~p"/tasks/#{task}"
+  defp return_path(_scope, "projects", task), do: ~p"/projects/#{task.project_id}"
 end

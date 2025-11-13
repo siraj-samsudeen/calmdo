@@ -29,6 +29,8 @@ defmodule CalmdoWeb.CoreComponents do
   use Phoenix.Component
   use Gettext, backend: CalmdoWeb.Gettext
 
+  import Phoenix.HTML, only: [raw: 1]
+
   alias Phoenix.LiveView.JS
 
   @doc """
@@ -243,6 +245,7 @@ defmodule CalmdoWeb.CoreComponents do
               "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
             @errors != [] && (@error_class || "border-error focus:ring-error/40")
           ]}
+          phx-update="ignore"
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
       </label>
@@ -483,5 +486,19 @@ defmodule CalmdoWeb.CoreComponents do
   """
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+
+  attr :text, :string, required: true
+  attr :class, :string, default: ""
+
+  def markdown(assigns) do
+    ~H"""
+    <div class={[
+      "prose prose-a:text-primary prose-a:hover:text-primary/70 dark:prose-invert",
+      @class
+    ]}>
+      {raw(Earmark.as_html!(@text))}
+    </div>
+    """
   end
 end

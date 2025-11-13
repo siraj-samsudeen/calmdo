@@ -28,6 +28,8 @@ defmodule CalmdoWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import CalmdoWeb.ConnCase
+      import PhoenixTest
+      import Calmdo.TestHelpers
     end
   end
 

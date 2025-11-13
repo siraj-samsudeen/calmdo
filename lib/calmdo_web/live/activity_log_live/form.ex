@@ -64,7 +64,7 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
         </div>
         <.input field={@form[:duration_in_hours]} type="number" label="Duration in hours" />
         <.input field={@form[:duration_in_minutes]} type="number" label="Duration in minutes" />
-        <.input field={@form[:notes]} type="textarea" label="Notes" />
+        <.input field={@form[:notes]} type="textarea" label="Notes" rows="4" />
         <.input field={@form[:billable]} type="checkbox" label="Billable" />
         <footer>
           <.button phx-disable-with="Saving..." variant="primary">Save Activity log</.button>
@@ -91,6 +91,7 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
   end
 
   defp return_to("show"), do: "show"
+  defp return_to("projects"), do: "projects"
   defp return_to(_), do: "index"
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -258,6 +259,7 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
 
   defp return_path(_scope, "index", _activity_log), do: ~p"/activity_logs"
   defp return_path(_scope, "show", activity_log), do: ~p"/activity_logs/#{activity_log}"
+  defp return_path(_scope, "projects", activity_log), do: ~p"/projects/#{activity_log.project_id}"
 
   defp blank_to_nil(map, key) when is_map(map) do
     case Map.get(map, key) do

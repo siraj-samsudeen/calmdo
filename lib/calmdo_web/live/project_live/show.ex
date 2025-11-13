@@ -29,7 +29,10 @@ defmodule CalmdoWeb.ProjectLive.Show do
         <div class="space-y-3">
           <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold">Tasks</h2>
-            <.link navigate={~p"/tasks/new?return_to=show"} class="btn btn-sm">
+            <.link
+              navigate={~p"/tasks/new?return_to=projects&project_id=#{@project.id}"}
+              class="btn btn-sm"
+            >
               <.icon name="hero-plus" /> New Task
             </.link>
           </div>
@@ -48,7 +51,9 @@ defmodule CalmdoWeb.ProjectLive.Show do
               </.link>
             </:col>
             <:action :let={{_id, task}}>
-              <.link navigate={~p"/activity_logs/new?task_id=#{task.id}&project_id=#{@project.id}"}>
+              <.link navigate={
+                ~p"/activity_logs/new?return_to=projects&task_id=#{task.id}&project_id=#{@project.id}"
+              }>
                 Log Time
               </.link>
             </:action>
@@ -58,7 +63,10 @@ defmodule CalmdoWeb.ProjectLive.Show do
         <div class="space-y-3">
           <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold">Logs</h2>
-            <.link navigate={~p"/activity_logs/new?project_id=#{@project.id}"} class="btn btn-sm">
+            <.link
+              navigate={~p"/activity_logs/new?return_to=projects&project_id=#{@project.id}"}
+              class="btn btn-sm"
+            >
               <.icon name="hero-plus" /> New Log
             </.link>
           </div>

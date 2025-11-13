@@ -40,6 +40,7 @@ defmodule Calmdo.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:earmark, "~> 1.0"},
       # {:phoenix_test, "~> 0.8"},
       {:phoenix_test,
        git: "https://github.com/siraj-samsudeen/phoenix_test.git",
