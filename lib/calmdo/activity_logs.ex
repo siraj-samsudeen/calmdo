@@ -44,10 +44,12 @@ defmodule Calmdo.ActivityLogs do
   def list_activity_logs(%Scope{} = _scope, opts) when is_list(opts) do
     task_id = Keyword.get(opts, :task_id)
     project_id = Keyword.get(opts, :project_id)
+    logged_by_id = Keyword.get(opts, :logged_by_id)
 
     base_activity_log_query()
     |> maybe_filter_task(task_id)
     |> maybe_filter_project(project_id)
+    |> maybe_filter_logged_by(logged_by_id)
     |> Repo.all()
   end
 
@@ -180,5 +182,12 @@ defmodule Calmdo.ActivityLogs do
   defp maybe_filter_project(query, project_id) do
     from al in query,
       where: al.project_id == ^project_id
+  end
+
+  defp maybe_filter_logged_by(query, nil), do: query
+
+  defp maybe_filter_logged_by(query, logged_by_id) do
+    from al in query,
+      where: al.logged_by_id == ^logged_by_id
   end
 end

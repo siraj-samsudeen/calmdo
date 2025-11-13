@@ -90,7 +90,7 @@ defmodule CalmdoWeb.TaskLive.Index do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     if connected?(socket) do
       Tasks.subscribe_tasks(socket.assigns.current_scope)
     end
@@ -100,7 +100,7 @@ defmodule CalmdoWeb.TaskLive.Index do
       |> assign(:page_title, "Listing Tasks")
       |> assign(:statuses, Ecto.Enum.values(Calmdo.Tasks.Task, :status))
       |> assign(:assignees, Calmdo.Accounts.list_users())
-      |> assign(:filters, %{status: nil, assignee_id: nil})
+      |> assign(:filters, %{status: nil, assignee_id: to_int(params["assigned_id"])})
       |> stream_configure(:tasks, dom_id: &"task-#{&1.id}")
       |> assign_tasks()
 
@@ -207,5 +207,15 @@ defmodule CalmdoWeb.TaskLive.Index do
     socket
     |> assign(:tasks_empty?, tasks == [])
     |> stream(:tasks, tasks, reset: true)
+  end
+
+  defp to_int(nil), do: nil
+  defp to_int(""), do: nil
+
+  defp to_int(value) when is_binary(value) do
+    case Integer.parse(value) do
+      {int, _} -> int
+      :error -> nil
+    end
   end
 end
