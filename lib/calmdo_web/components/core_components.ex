@@ -245,6 +245,7 @@ defmodule CalmdoWeb.CoreComponents do
               "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
             @errors != [] && (@error_class || "border-error focus:ring-error/40")
           ]}
+          phx-update="ignore"
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
       </label>
