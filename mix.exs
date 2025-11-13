@@ -41,6 +41,7 @@ defmodule Calmdo.MixProject do
   defp deps do
     [
       {:earmark, "~> 1.0"},
+      {:html_sanitize_ex, "~> 1.4"},
       # {:phoenix_test, "~> 0.8"},
       {:phoenix_test,
        git: "https://github.com/siraj-samsudeen/phoenix_test.git",

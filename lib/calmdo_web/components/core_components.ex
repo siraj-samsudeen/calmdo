@@ -497,7 +497,7 @@ defmodule CalmdoWeb.CoreComponents do
       "prose prose-a:text-primary prose-a:hover:text-primary/70 dark:prose-invert",
       @class
     ]}>
-      {raw(Earmark.as_html!(@text))}
+      {raw(Earmark.as_html!(@text) |> HtmlSanitizeEx.markdown_html())}
     </div>
     """
   end
