@@ -111,7 +111,7 @@ defmodule CalmdoWeb.Layouts do
               <ul class="space-y-1">
                 <li>
                   <.link
-                    href={~p"/tasks?assigned_id=#{@current_scope.user}"}
+                    navigate={~p"/tasks?assignee_id=#{@current_scope.user}"}
                     class="btn btn-ghost btn-block justify-start"
                   >
                     My Tasks
@@ -119,7 +119,7 @@ defmodule CalmdoWeb.Layouts do
                 </li>
                 <li>
                   <.link
-                    href={~p"/activity_logs?logged_by_id=#{@current_scope.user}"}
+                    navigate={~p"/activity_logs?logged_by_id=#{@current_scope.user}"}
                     class="btn btn-ghost btn-block justify-start"
                   >
                     My Logs
@@ -132,17 +132,17 @@ defmodule CalmdoWeb.Layouts do
               <h2 class="mb-2 px-2 text-xs font-semibold uppercase opacity-60">Reference</h2>
               <ul class="space-y-1">
                 <li>
-                  <.link href={~p"/projects"} class="btn btn-ghost btn-block justify-start">
+                  <.link navigate={~p"/projects"} class="btn btn-ghost btn-block justify-start">
                     Projects
                   </.link>
                 </li>
                 <li>
-                  <.link href={~p"/tasks"} class="btn btn-ghost btn-block justify-start">
+                  <.link navigate={~p"/tasks"} class="btn btn-ghost btn-block justify-start">
                     Tasks
                   </.link>
                 </li>
                 <li>
-                  <.link href={~p"/activity_logs"} class="btn btn-ghost btn-block justify-start">
+                  <.link navigate={~p"/activity_logs"} class="btn btn-ghost btn-block justify-start">
                     Activity Logs
                   </.link>
                 </li>

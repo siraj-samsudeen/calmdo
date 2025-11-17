@@ -4,6 +4,7 @@ defmodule Calmdo.Tasks do
   """
 
   import Ecto.Query, warn: false
+  import Calmdo.EctoHelpers
   alias Calmdo.Repo
 
   alias Calmdo.Tasks.Task
@@ -37,34 +38,18 @@ defmodule Calmdo.Tasks do
 
   """
   def list_tasks(%Scope{} = _scope) do
-    query =
-      from t in Task,
-        preload: [:project, :activity_logs, :assignee]
-
-    Repo.all(query)
+    base_tasks_query()
+    |> Repo.all()
   end
 
   def list_tasks(%Scope{} = _scope, opts) when is_list(opts) do
     status = Keyword.get(opts, :status)
     assignee_id = Keyword.get(opts, :assignee_id)
 
-    base = from(t in Task, preload: [:project, :activity_logs, :assignee])
-
-    base =
-      if status do
-        from t in base, where: t.status == ^status
-      else
-        base
-      end
-
-    base =
-      if assignee_id do
-        from t in base, where: t.assignee_id == ^assignee_id
-      else
-        base
-      end
-
-    Repo.all(base)
+    base_tasks_query()
+    |> maybe_where(:status, status)
+    |> maybe_where(:assignee_id, assignee_id)
+    |> Repo.all()
   end
 
   @doc """
@@ -166,6 +151,11 @@ defmodule Calmdo.Tasks do
     true = task.created_by_id == scope.user.id
 
     Task.changeset(task, attrs, scope)
+  end
+
+  defp base_tasks_query do
+    from t in Task,
+      preload: [:project, :activity_logs, :assignee]
   end
 
   alias Calmdo.Tasks.Project

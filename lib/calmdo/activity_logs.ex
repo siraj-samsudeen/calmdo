@@ -4,6 +4,7 @@ defmodule Calmdo.ActivityLogs do
   """
 
   import Ecto.Query, warn: false
+  import Calmdo.EctoHelpers
   alias Calmdo.Repo
 
   alias Calmdo.ActivityLogs.ActivityLog
@@ -47,9 +48,9 @@ defmodule Calmdo.ActivityLogs do
     logged_by_id = Keyword.get(opts, :logged_by_id)
 
     base_activity_log_query()
-    |> maybe_filter_task(task_id)
-    |> maybe_filter_project(project_id)
-    |> maybe_filter_logged_by(logged_by_id)
+    |> maybe_where(:task_id, task_id)
+    |> maybe_where(:project_id, project_id)
+    |> maybe_where(:logged_by_id, logged_by_id)
     |> Repo.all()
   end
 
@@ -168,26 +169,5 @@ defmodule Calmdo.ActivityLogs do
   defp base_activity_log_query do
     from al in ActivityLog,
       preload: [:task, :project]
-  end
-
-  defp maybe_filter_task(query, nil), do: query
-
-  defp maybe_filter_task(query, task_id) do
-    from al in query,
-      where: al.task_id == ^task_id
-  end
-
-  defp maybe_filter_project(query, nil), do: query
-
-  defp maybe_filter_project(query, project_id) do
-    from al in query,
-      where: al.project_id == ^project_id
-  end
-
-  defp maybe_filter_logged_by(query, nil), do: query
-
-  defp maybe_filter_logged_by(query, logged_by_id) do
-    from al in query,
-      where: al.logged_by_id == ^logged_by_id
   end
 end
