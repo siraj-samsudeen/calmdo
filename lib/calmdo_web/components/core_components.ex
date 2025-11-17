@@ -217,7 +217,7 @@ defmodule CalmdoWeb.CoreComponents do
           name={@name}
           class={[
             @class ||
-              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
+              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30",
             @errors != [] && (@error_class || "border-error focus:ring-error/40")
           ]}
           multiple={@multiple}
@@ -242,7 +242,7 @@ defmodule CalmdoWeb.CoreComponents do
           name={@name}
           class={[
             @class ||
-              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
+              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30",
             @errors != [] && (@error_class || "border-error focus:ring-error/40")
           ]}
           phx-update="ignore"
@@ -267,7 +267,7 @@ defmodule CalmdoWeb.CoreComponents do
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
             @class ||
-              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
+              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30",
             @errors != [] && (@error_class || "border-error focus:ring-error/40")
           ]}
           {@rest}
@@ -364,7 +364,7 @@ defmodule CalmdoWeb.CoreComponents do
               phx-click={@row_click && @row_click.(row)}
               class={[
                 "align-middle",
-                @row_click && "hover:cursor-pointer hover:text-[#2563eb]"
+                @row_click && "hover:cursor-pointer hover:text-blue-600"
               ]}
             >
               {render_slot(col, @row_item.(row))}

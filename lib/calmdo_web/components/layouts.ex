@@ -39,8 +39,8 @@ defmodule CalmdoWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="navbar sticky top-0 z-40 bg-primary text-primary-content shadow">
-      <div class="flex items-center gap-3 px-4 sm:px-6 lg:px-8 w-full">
+    <header class="navbar px-4 sm:px-6 lg:px-8">
+      <div class="flex-1">
         <label
           for="layout-drawer"
           class="btn btn-square btn-ghost lg:hidden"
@@ -48,48 +48,55 @@ defmodule CalmdoWeb.Layouts do
         >
           <.icon name="hero-bars-3" />
         </label>
-        <.link href={~p"/"} class="text-lg font-semibold tracking-tight">
+        <.link href={~p"/"} class="btn btn-ghost text-lg font-semibold normal-case">
           Calmdo
         </.link>
-
-        <div class="ml-auto flex items-center gap-3">
-          <div class="hidden md:block"><.theme_toggle /></div>
+      </div>
+      <div class="flex-none">
+        <ul class="flex flex-column px-1 space-x-4 items-center">
+          <li>
+            <.theme_toggle />
+          </li>
           <%= if @current_scope && @current_scope.user do %>
-            <div class="dropdown dropdown-end">
-              <label tabindex="0" class="btn btn-ghost gap-2">
-                <div class="avatar placeholder">
-                  <div class="w-8 rounded-full bg-primary-content/20 text-primary-content">
-                    <span>{user_initial(@current_scope.user)}</span>
+            <li>
+              <div class="dropdown dropdown-end">
+                <label tabindex="0" class="btn btn-ghost gap-2">
+                  <div class="avatar placeholder">
+                    <div class="w-8 rounded-full bg-base-300 text-base-content">
+                      <span>{user_initial(@current_scope.user)}</span>
+                    </div>
                   </div>
-                </div>
-                <span class="hidden sm:inline max-w-[220px] truncate">
-                  {display_user_email(@current_scope.user)}
-                </span>
-              </label>
-              <ul
-                tabindex="0"
-                class="menu dropdown-content mt-3 w-56 rounded-box bg-base-100 text-base-content p-2 shadow"
-              >
-                <li class="menu-title">{display_user_email(@current_scope.user)}</li>
-                <li><.link href={~p"/users/settings"}>Settings</.link></li>
-                <li><.link href={~p"/users/log-out"} method="delete">Log out</.link></li>
-              </ul>
-            </div>
+                  <span class="hidden sm:inline max-w-[220px] truncate">
+                    {display_user_email(@current_scope.user)}
+                  </span>
+                </label>
+                <ul
+                  tabindex="0"
+                  class="menu dropdown-content mt-3 w-56 rounded-box bg-base-100 p-2 shadow-lg"
+                >
+                  <li class="menu-title">{display_user_email(@current_scope.user)}</li>
+                  <li><.link href={~p"/users/settings"}>Settings</.link></li>
+                  <li><.link href={~p"/users/log-out"} method="delete">Log out</.link></li>
+                </ul>
+              </div>
+            </li>
           <% else %>
-            <div class="flex items-center gap-2">
-              <.link href={~p"/users/log-in"} class="btn btn-sm btn-ghost text-primary-content">
+            <li>
+              <.link href={~p"/users/log-in"} class="btn btn-ghost btn-sm">
                 Log in
               </.link>
-              <.link href={~p"/users/register"} class="btn btn-sm btn-secondary">
+            </li>
+            <li>
+              <.link href={~p"/users/register"} class="btn btn-primary btn-sm">
                 Sign up
               </.link>
-            </div>
+            </li>
           <% end %>
-        </div>
+        </ul>
       </div>
     </header>
 
-    <div class="drawer lg:drawer-open min-h-[calc(100vh-4rem)] bg-base-200">
+    <div class="drawer lg:drawer-open min-h-[calc(100vh-4rem)]">
       <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
       <div class="drawer-content flex min-h-[calc(100vh-4rem)] flex-col">
         <main class="flex flex-1 flex-col bg-base-200">
@@ -207,31 +214,31 @@ defmodule CalmdoWeb.Layouts do
   """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="relative flex h-8 w-32 items-center rounded-full border border-white/40 bg-white/15 backdrop-blur shadow-inner">
-      <div class="absolute inset-y-1 left-1 w-1/3 rounded-full bg-white text-[#2563eb] shadow transition-all duration-200 ease-out [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3" />
+    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
+      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
 
       <button
-        class="z-10 flex w-1/3 cursor-pointer items-center justify-center text-xs font-semibold text-[#2563eb]"
+        class="flex p-2 cursor-pointer w-1/3"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="system"
       >
-        <.icon name="hero-computer-desktop-micro" class="size-4" />
+        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
       </button>
 
       <button
-        class="z-10 flex w-1/3 cursor-pointer items-center justify-center text-xs font-semibold text-[#2563eb]"
+        class="flex p-2 cursor-pointer w-1/3"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="light"
       >
-        <.icon name="hero-sun-micro" class="size-4" />
+        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
       </button>
 
       <button
-        class="z-10 flex w-1/3 cursor-pointer items-center justify-center text-xs font-semibold text-[#2563eb]"
+        class="flex p-2 cursor-pointer w-1/3"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="dark"
       >
-        <.icon name="hero-moon-micro" class="size-4" />
+        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
       </button>
     </div>
     """
