@@ -112,12 +112,11 @@ defmodule CalmdoWeb.TaskLive.Index do
 
   @impl true
   def handle_params(params, _uri, socket) do
-    filters = %{status: params["status"], assignee_id: params["assignee_id"]}
-    tasks = Tasks.list_tasks(socket.assigns.current_scope, Map.to_list(filters))
+    tasks = Tasks.list_tasks(socket.assigns.current_scope, params)
 
     socket =
       socket
-      |> assign(:filters, filters)
+      |> assign(:filters, %{status: params["status"], assignee_id: params["assignee_id"]})
       |> assign(:tasks_empty?, tasks == [])
       |> stream(:tasks, tasks, reset: true)
 

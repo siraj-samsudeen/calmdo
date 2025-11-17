@@ -42,15 +42,11 @@ defmodule Calmdo.ActivityLogs do
     |> Repo.all()
   end
 
-  def list_activity_logs(%Scope{} = _scope, opts) when is_list(opts) do
-    task_id = Keyword.get(opts, :task_id)
-    project_id = Keyword.get(opts, :project_id)
-    logged_by_id = Keyword.get(opts, :logged_by_id)
-
+  def list_activity_logs(%Scope{} = _scope, params) when is_map(params) do
     base_activity_log_query()
-    |> maybe_where(:task_id, task_id)
-    |> maybe_where(:project_id, project_id)
-    |> maybe_where(:logged_by_id, logged_by_id)
+    |> maybe_where(:task_id, params["task_id"])
+    |> maybe_where(:project_id, params["project_id"])
+    |> maybe_where(:logged_by_id, params["logged_by_id"])
     |> Repo.all()
   end
 

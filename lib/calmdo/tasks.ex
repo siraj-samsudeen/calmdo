@@ -42,13 +42,10 @@ defmodule Calmdo.Tasks do
     |> Repo.all()
   end
 
-  def list_tasks(%Scope{} = _scope, opts) when is_list(opts) do
-    status = Keyword.get(opts, :status)
-    assignee_id = Keyword.get(opts, :assignee_id)
-
+  def list_tasks(%Scope{} = _scope, params) when is_map(params) do
     base_tasks_query()
-    |> maybe_where(:status, status)
-    |> maybe_where(:assignee_id, assignee_id)
+    |> maybe_where(:status, params["status"])
+    |> maybe_where(:assignee_id, params["assignee_id"])
     |> Repo.all()
   end
 

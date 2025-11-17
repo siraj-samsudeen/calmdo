@@ -65,12 +65,7 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
 
   @impl true
   def handle_params(params, _uri, socket) do
-    activity_logs =
-      ActivityLogs.list_activity_logs(socket.assigns.current_scope,
-        task_id: params["task_id"],
-        project_id: params["project_id"],
-        logged_by_id: params["logged_by_id"]
-      )
+    activity_logs = ActivityLogs.list_activity_logs(socket.assigns.current_scope, params)
 
     {:noreply,
      socket
