@@ -69,7 +69,7 @@ defmodule CalmdoWeb.TaskLiveTest do
 
       assert {:ok, form_live, _html} =
                index_live
-               |> element("#task-#{task.id} a", "Edit")
+               |> element("#tasks-#{task.id} a", "Edit")
                |> render_click()
                |> follow_redirect(conn, ~p"/tasks/#{task}/edit")
 
@@ -93,8 +93,8 @@ defmodule CalmdoWeb.TaskLiveTest do
     test "deletes task in listing", %{conn: conn, task: task} do
       {:ok, index_live, _html} = live(conn, ~p"/tasks")
 
-      assert index_live |> element("#task-#{task.id} a", "Delete") |> render_click()
-      refute has_element?(index_live, "#task-#{task.id}")
+      assert index_live |> element("#tasks-#{task.id} a", "Delete") |> render_click()
+      refute has_element?(index_live, "#tasks-#{task.id}")
     end
   end
 

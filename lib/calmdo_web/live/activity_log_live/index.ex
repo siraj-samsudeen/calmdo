@@ -60,8 +60,16 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, page_title(params))
-     |> stream(:activity_logs, list_activity_logs(socket.assigns.current_scope, params))}
+     |> assign(:page_title, page_title(params))}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    activity_logs = ActivityLogs.list_activity_logs(socket.assigns.current_scope, params)
+
+    {:noreply,
+     socket
+     |> stream(:activity_logs, activity_logs)}
   end
 
   @impl true
@@ -76,25 +84,9 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
   def handle_info({type, %Calmdo.ActivityLogs.ActivityLog{}}, socket)
       when type in [:created, :updated, :deleted] do
     {:noreply,
-     stream(socket, :activity_logs, list_activity_logs(socket.assigns.current_scope), reset: true)}
-  end
-
-  defp list_activity_logs(current_scope, params \\ %{}) do
-    task_id = Map.get(params, "task_id")
-    project_id = Map.get(params, "project_id")
-
-    cond do
-      task_id ->
-        ActivityLogs.list_activity_logs(current_scope, task_id: String.to_integer(task_id))
-
-      project_id ->
-        ActivityLogs.list_activity_logs(current_scope,
-          project_id: String.to_integer(project_id)
-        )
-
-      true ->
-        ActivityLogs.list_activity_logs(current_scope)
-    end
+     stream(socket, :activity_logs, ActivityLogs.list_activity_logs(socket.assigns.current_scope),
+       reset: true
+     )}
   end
 
   defp page_title(%{"task_id" => _}), do: "Activity logs for task"

@@ -26,15 +26,17 @@ defmodule CalmdoWeb.TaskLive.Index do
           name="status"
           type="select"
           label="Status"
-          options={[{"All", ""} | Enum.map(@statuses, &{format_status(&1), &1})]}
+          options={status_options(@statuses)}
           value={@filters.status}
+          phx-debounce="300"
         />
         <.input
           name="assignee_id"
           type="select"
           label="Assignee"
-          options={[{"All", ""} | Enum.map(@assignees, &{&1.email, &1.id})]}
+          options={assignee_options(@assignees)}
           value={@filters.assignee_id}
+          phx-debounce="300"
         />
       </.form>
 
@@ -81,6 +83,11 @@ defmodule CalmdoWeb.TaskLive.Index do
     """
   end
 
+  defp status_options(statuses), do: [{"All", nil} | Enum.map(statuses, &{format_status(&1), &1})]
+
+  defp assignee_options(assignees),
+    do: [{"All", nil} | Enum.map(assignees, &{&1.email, &1.id})]
+
   defp log_time_path(task) do
     if task.project_id do
       ~p"/activity_logs/new?task_id=#{task.id}&project_id=#{task.project_id}"
@@ -97,14 +104,23 @@ defmodule CalmdoWeb.TaskLive.Index do
 
     socket =
       socket
-      |> assign(:page_title, "Listing Tasks")
       |> assign(:statuses, Ecto.Enum.values(Calmdo.Tasks.Task, :status))
       |> assign(:assignees, Calmdo.Accounts.list_users())
-      |> assign(:filters, %{status: nil, assignee_id: nil})
-      |> stream_configure(:tasks, dom_id: &"task-#{&1.id}")
-      |> assign_tasks()
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    tasks = Tasks.list_tasks(socket.assigns.current_scope, params)
+
+    socket =
+      socket
+      |> assign(:filters, %{status: params["status"], assignee_id: params["assignee_id"]})
+      |> assign(:tasks_empty?, tasks == [])
+      |> stream(:tasks, tasks, reset: true)
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -112,68 +128,28 @@ defmodule CalmdoWeb.TaskLive.Index do
     task = Tasks.get_task!(socket.assigns.current_scope, id)
 
     {:ok, _} = Tasks.delete_task(socket.assigns.current_scope, task)
-    {:noreply, assign_tasks(socket)}
+    {:noreply, stream_delete(socket, :tasks, task)}
   end
 
   @impl true
   def handle_event("filter", params, socket) do
-    filters = %{
-      status: Map.get(params, "status"),
-      assignee_id: Map.get(params, "assignee_id")
-    }
+    cleaned_params =
+      params
+      |> Map.take(["status", "assignee_id"])
+      |> Enum.reject(fn {_k, v} -> v in ["", nil] end)
+      |> Enum.into(%{})
 
-    {:noreply, socket |> assign(:filters, filters) |> assign_tasks()}
+    to =
+      if cleaned_params == %{}, do: ~p"/tasks", else: ~p"/tasks?#{cleaned_params}"
+
+    {:noreply, socket |> push_patch(to: to)}
   end
 
   @impl true
   def handle_info({type, %Calmdo.Tasks.Task{}}, socket)
       when type in [:created, :updated, :deleted] do
-    {:noreply, assign_tasks(socket)}
-  end
-
-  defp list_tasks(current_scope, filters) do
-    filters = filters || %{status: nil, assignee_id: nil}
-
-    status =
-      case filters.status do
-        nil ->
-          nil
-
-        "" ->
-          nil
-
-        value ->
-          Map.get(
-            %{
-              "not_started" => :not_started,
-              :not_started => :not_started,
-              "started" => :started,
-              :started => :started,
-              "work_in_progress" => :work_in_progress,
-              :work_in_progress => :work_in_progress,
-              "completed" => :completed,
-              :completed => :completed
-            },
-            value,
-            nil
-          )
-      end
-
-    assignee_id =
-      case filters.assignee_id do
-        nil -> nil
-        "" -> nil
-        id when is_integer(id) -> id
-        id when is_binary(id) -> String.to_integer(id)
-      end
-
-    status =
-      cond do
-        status == :not_started -> nil
-        true -> status
-      end
-
-    Tasks.list_tasks(current_scope, status: status, assignee_id: assignee_id)
+    {:noreply,
+     stream(socket, :tasks, Tasks.list_tasks(socket.assigns.current_scope), reset: true)}
   end
 
   defp total_hours(task) do
@@ -189,8 +165,7 @@ defmodule CalmdoWeb.TaskLive.Index do
     |> to_string()
   end
 
-  defp format_status(nil), do: "Not started"
-  defp format_status(:work_in_progress), do: "Work In Progress"
+  defp format_status(nil), do: ""
 
   defp format_status(atom) when is_atom(atom) do
     atom
@@ -199,13 +174,5 @@ defmodule CalmdoWeb.TaskLive.Index do
     |> String.split()
     |> Enum.map(&String.capitalize/1)
     |> Enum.join(" ")
-  end
-
-  defp assign_tasks(socket) do
-    tasks = list_tasks(socket.assigns.current_scope, socket.assigns.filters)
-
-    socket
-    |> assign(:tasks_empty?, tasks == [])
-    |> stream(:tasks, tasks, reset: true)
   end
 end

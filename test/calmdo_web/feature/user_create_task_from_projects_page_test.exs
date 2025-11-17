@@ -10,7 +10,7 @@ defmodule CalmdoWeb.UserCreateTaskFromProjectsPageTest do
 
     conn
     |> visit(~p"/projects/#{project}")
-    |> click_link("main a", "New Task")
+    |> click_link("New Task")
     |> create_new_task(name: "some task")
     |> assert_text("some task")
     |> assert_path(~p"/projects/#{project}")

@@ -10,7 +10,7 @@ defmodule CalmdoWeb.UserCreateLogFromProjectsPageTest do
 
     conn
     |> visit(~p"/projects/#{project}")
-    |> click_link("main a", "New Log")
+    |> click_link("New Log")
     |> create_new_log(hours: 1, notes: "some notes")
     |> assert_text("Activity log created successfully")
     |> assert_path(~p"/projects/#{project}")
