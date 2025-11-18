@@ -39,3 +39,6 @@ npm-debug.log
 temp.md
 .neon
 backups/prod_data_2025-10-16.sql
+
+# Editor build/cache directory for ElixirLS
+.elixir_ls/
