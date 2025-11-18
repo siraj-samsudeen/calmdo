@@ -27,6 +27,56 @@
 - Don't use `cond` in LiveView to pick which filter - pass all filters to Context and let it handle query building.
 - Pattern: LiveView calls `Context.list_things(scope, params)`, Context parses and builds query.
 
+## Query Composition Pattern (Hybrid Approach)
+Use a hybrid approach for building Ecto queries - combining concise helpers with explicit naming:
+
+### Use `maybe_where` for simple filters:
+```elixir
+def list_tasks(%Scope{} = _scope, params) when is_map(params) do
+  Task
+  |> with_task_preloads()
+  |> maybe_where(:status, params["status"])
+  |> maybe_where(:assignee_id, params["assignee_id"])
+  |> order_by_recent()
+  |> Repo.all()
+end
+```
+
+### Use named functions for:
+- **Preloads**: `with_preloads()`, `with_task_preloads()` - Makes associations explicit
+- **Ordering**: `order_by_recent()` - Clear intent, single source of truth
+- **Complex logic**: `filter_by_project_or_task_project()` - Business logic that deserves a name
+- **Joins**: `join_tasks()` - Use named bindings with `as: :binding_name`
+
+### Benefits:
+- ✅ Concise for simple filters (no nil-handling boilerplate)
+- ✅ Explicit for complex logic (self-documenting)
+- ✅ Reads like English from top to bottom
+- ✅ Easy to add/remove filters without creating new functions
+
+### Example with complex logic:
+```elixir
+def list_activity_logs_for_project(%Scope{} = _scope, project_id) do
+  ActivityLog
+  |> with_preloads()
+  |> join_tasks()  # Named function for join
+  |> filter_by_project_or_task_project(project_id)  # Named function for complex WHERE
+  |> order_by_recent()
+  |> Repo.all()
+end
+
+defp join_tasks(query) do
+  from al in query,
+    left_join: t in assoc(al, :task),
+    as: :task  # Named binding for clarity
+end
+
+defp filter_by_project_or_task_project(query, project_id) do
+  from [al, task: t] in query,  # Reference named binding
+    where: al.project_id == ^project_id or t.project_id == ^project_id
+end
+```
+
 ## Project Context
 - Small team app where users can see all data (no user-level data isolation)
 - Uses Scope pattern for context passing

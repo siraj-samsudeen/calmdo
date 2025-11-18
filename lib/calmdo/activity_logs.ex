@@ -38,15 +38,19 @@ defmodule Calmdo.ActivityLogs do
 
   """
   def list_activity_logs(%Scope{} = _scope) do
-    base_activity_log_query()
+    ActivityLog
+    |> with_preloads()
+    |> order_by_recent()
     |> Repo.all()
   end
 
   def list_activity_logs(%Scope{} = _scope, params) when is_map(params) do
-    base_activity_log_query()
+    ActivityLog
+    |> with_preloads()
     |> maybe_where(:task_id, params["task_id"])
     |> maybe_where(:project_id, params["project_id"])
     |> maybe_where(:logged_by_id, params["logged_by_id"])
+    |> order_by_recent()
     |> Repo.all()
   end
 
@@ -71,11 +75,11 @@ defmodule Calmdo.ActivityLogs do
   end
 
   def list_activity_logs_for_project(%Scope{} = _scope, project_id) do
-    from(al in ActivityLog,
-      left_join: t in assoc(al, :task),
-      where: al.project_id == ^project_id or t.project_id == ^project_id,
-      preload: [:project, :task]
-    )
+    ActivityLog
+    |> with_preloads()
+    |> join_tasks()
+    |> filter_by_project_or_task_project(project_id)
+    |> order_by_recent()
     |> Repo.all()
   end
 
@@ -162,8 +166,23 @@ defmodule Calmdo.ActivityLogs do
     ActivityLog.changeset(activity_log, attrs, scope)
   end
 
-  defp base_activity_log_query do
-    from al in ActivityLog,
-      preload: [:task, :project]
+  # Query composition helpers
+  defp with_preloads(query) do
+    from q in query, preload: [:task, :project]
+  end
+
+  defp order_by_recent(query) do
+    from q in query, order_by: [desc: q.updated_at]
+  end
+
+  defp join_tasks(query) do
+    from al in query,
+      left_join: t in assoc(al, :task),
+      as: :task
+  end
+
+  defp filter_by_project_or_task_project(query, project_id) do
+    from [al, task: t] in query,
+      where: al.project_id == ^project_id or t.project_id == ^project_id
   end
 end

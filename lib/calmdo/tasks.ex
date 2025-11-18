@@ -38,14 +38,18 @@ defmodule Calmdo.Tasks do
 
   """
   def list_tasks(%Scope{} = _scope) do
-    base_tasks_query()
+    Task
+    |> with_task_preloads()
+    |> order_by_recent()
     |> Repo.all()
   end
 
   def list_tasks(%Scope{} = _scope, params) when is_map(params) do
-    base_tasks_query()
+    Task
+    |> with_task_preloads()
     |> maybe_where(:status, params["status"])
     |> maybe_where(:assignee_id, params["assignee_id"])
+    |> order_by_recent()
     |> Repo.all()
   end
 
@@ -150,9 +154,13 @@ defmodule Calmdo.Tasks do
     Task.changeset(task, attrs, scope)
   end
 
-  defp base_tasks_query do
-    from t in Task,
-      preload: [:project, :activity_logs, :assignee]
+  # Query composition helpers
+  defp with_task_preloads(query) do
+    from q in query, preload: [:project, :activity_logs, :assignee]
+  end
+
+  defp order_by_recent(query) do
+    from q in query, order_by: [desc: q.updated_at]
   end
 
   alias Calmdo.Tasks.Project
@@ -186,7 +194,8 @@ defmodule Calmdo.Tasks do
 
   """
   def list_projects(%Scope{} = _scope) do
-    Repo.all(Project)
+    from(p in Project, order_by: [desc: p.updated_at])
+    |> Repo.all()
   end
 
   @doc """
@@ -291,10 +300,10 @@ defmodule Calmdo.Tasks do
   end
 
   def list_tasks_for_project(%Scope{} = _scope, project_id) do
-    from(t in Task,
-      where: t.project_id == ^project_id,
-      preload: [:project, :activity_logs, :assignee]
-    )
+    Task
+    |> with_task_preloads()
+    |> maybe_where(:project_id, project_id)
+    |> order_by_recent()
     |> Repo.all()
   end
 end
