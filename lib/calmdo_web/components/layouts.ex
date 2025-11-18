@@ -39,7 +39,7 @@ defmodule CalmdoWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
+    <header class="navbar sticky top-0 z-40 bg-base-100 border-b px-4 sm:px-6 lg:px-8">
       <div class="flex-1">
         <label
           for="layout-drawer"
@@ -48,21 +48,19 @@ defmodule CalmdoWeb.Layouts do
         >
           <.icon name="hero-bars-3" />
         </label>
-        <.link href={~p"/"} class="btn btn-ghost text-lg font-semibold normal-case">
+        <.link href={~p"/"} class="btn btn-ghost text-lg">
           Calmdo
         </.link>
       </div>
       <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <.theme_toggle />
-          </li>
+        <ul class="flex gap-4 items-center">
+          <li><.theme_toggle /></li>
           <%= if @current_scope && @current_scope.user do %>
             <li>
               <div class="dropdown dropdown-end">
                 <label tabindex="0" class="btn btn-ghost gap-2">
-                  <div class="avatar placeholder">
-                    <div class="w-8 rounded-full bg-base-300 text-base-content">
+                  <div class="avatar avatar-placeholder">
+                    <div class="size-8 rounded-full bg-base-300 text-base-content">
                       <span>{user_initial(@current_scope.user)}</span>
                     </div>
                   </div>
@@ -98,69 +96,69 @@ defmodule CalmdoWeb.Layouts do
 
     <div class="drawer lg:drawer-open min-h-[calc(100vh-4rem)]">
       <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
-      <div class="drawer-content flex min-h-[calc(100vh-4rem)] flex-col">
-        <main class="flex flex-1 flex-col bg-base-200">
-          <div class="mx-auto flex w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-            <div class="flex-1 space-y-6">
-              <div class="rounded-lg border bg-base-100 p-6 shadow-sm">
-                {render_slot(@inner_block)}
-              </div>
+      <div class="drawer-content flex">
+        <main class="flex-1">
+          <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+            <div class="rounded-lg border bg-base-100 p-6 shadow-sm">
+              {render_slot(@inner_block)}
             </div>
           </div>
         </main>
       </div>
-      <div class="drawer-side">
+      <div class="drawer-side h-[calc(100dvh-4rem)] top-16">
         <label for="layout-drawer" class="drawer-overlay"></label>
-        <aside class="flex h-full w-72 flex-col border-r bg-base-100 text-sm">
-          <nav class="flex flex-1 flex-col gap-6 px-4 py-6">
-            <section :if={@current_scope}>
-              <h2 class="mb-2 px-2 text-xs font-semibold uppercase opacity-60">Quick Links</h2>
-              <ul class="space-y-1">
-                <li>
-                  <.link
-                    navigate={~p"/tasks?assignee_id=#{@current_scope.user}"}
-                    class="btn btn-ghost btn-block justify-start"
-                  >
-                    My Tasks
-                  </.link>
-                </li>
-                <li>
-                  <.link
-                    navigate={~p"/activity_logs?logged_by_id=#{@current_scope.user}"}
-                    class="btn btn-ghost btn-block justify-start"
-                  >
-                    My Logs
-                  </.link>
-                </li>
-              </ul>
-            </section>
 
-            <section>
-              <h2 class="mb-2 px-2 text-xs font-semibold uppercase opacity-60">Reference</h2>
-              <ul class="space-y-1">
-                <li>
-                  <.link navigate={~p"/projects"} class="btn btn-ghost btn-block justify-start">
-                    Projects
-                  </.link>
-                </li>
-                <li>
-                  <.link navigate={~p"/tasks"} class="btn btn-ghost btn-block justify-start">
-                    Tasks
-                  </.link>
-                </li>
-                <li>
-                  <.link navigate={~p"/activity_logs"} class="btn btn-ghost btn-block justify-start">
-                    Activity Logs
-                  </.link>
-                </li>
-              </ul>
-            </section>
+        <aside class="w-72 h-full bg-base-100 border-r text-sm">
+          <nav class="flex flex-1 flex-col gap-6 px-4 py-6">
+            <.sidebar_section
+              :if={@current_scope}
+              heading="Quick Links"
+              links={[
+                %{label: "My Tasks", path: ~p"/tasks?assignee_id=#{@current_scope.user}"},
+                %{
+                  label: "My Activity Logs",
+                  path: ~p"/activity_logs?logged_by_id=#{@current_scope.user}"
+                }
+              ]}
+            />
+            <.sidebar_section
+              heading="Reference"
+              links={[
+                %{label: "Projects", path: ~p"/projects"},
+                %{label: "Tasks", path: ~p"/tasks"},
+                %{label: "Activity Logs", path: ~p"/activity_logs"}
+              ]}
+            />
           </nav>
         </aside>
       </div>
     </div>
 
     <.flash_group flash={@flash} />
+    """
+  end
+
+  attr :heading, :string, required: true
+  attr :links, :list, required: true
+
+  def sidebar_section(assigns) do
+    ~H"""
+    <section>
+      <h2 class="mb-2 px-2 text-xs font-semibold uppercase opacity-60">
+        {@heading}
+      </h2>
+
+      <ul class="space-y-1">
+        <li :for={link <- @links}>
+          <.link
+            navigate={link.path}
+            class="btn btn-ghost btn-block justify-start"
+          >
+            {link.label}
+          </.link>
+        </li>
+      </ul>
+    </section>
     """
   end
 
