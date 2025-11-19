@@ -108,8 +108,6 @@ defmodule Calmdo.Tasks do
 
   """
   def update_task(%Scope{} = scope, %Task{} = task, attrs) do
-    true = task.created_by_id == scope.user.id
-
     with {:ok, task = %Task{}} <-
            task
            |> Task.changeset(attrs, scope)
@@ -132,8 +130,6 @@ defmodule Calmdo.Tasks do
 
   """
   def delete_task(%Scope{} = scope, %Task{} = task) do
-    true = task.created_by_id == scope.user.id
-
     with {:ok, task = %Task{}} <-
            Repo.delete(task) do
       broadcast_task(scope, {:deleted, task})
@@ -151,8 +147,6 @@ defmodule Calmdo.Tasks do
 
   """
   def change_task(%Scope{} = scope, %Task{} = task, attrs \\ %{}) do
-    true = task.created_by_id == scope.user.id
-
     Task.changeset(task, attrs, scope)
   end
 
