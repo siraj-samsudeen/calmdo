@@ -9,6 +9,9 @@ defmodule Calmdo.Tasks.Task do
     field :priority, Ecto.Enum, values: [:low, :medium, :high]
     field :due_date, :date
 
+    # Virtual field populated by database aggregation
+    field :total_hours, :float, virtual: true
+
     belongs_to :created_by, Calmdo.Accounts.User
     belongs_to :assignee, Calmdo.Accounts.User
     belongs_to :project, Calmdo.Tasks.Project

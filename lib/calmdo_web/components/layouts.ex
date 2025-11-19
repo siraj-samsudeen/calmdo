@@ -35,6 +35,10 @@ defmodule CalmdoWeb.Layouts do
     default: [],
     doc: "optional project entries to surface in the sidebar"
 
+  attr :no_wrapper, :boolean,
+    default: false,
+    doc: "removes the border wrapper for full-width content"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -99,11 +103,17 @@ defmodule CalmdoWeb.Layouts do
 
     <div class="drawer lg:drawer-open min-h-[calc(100vh-4rem)]">
       <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
-      <div class="drawer-content flex">
-        <main class="flex-1 bg-base-100">
-          <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-            <div class="rounded-lg bg-base-100 p-6">
-              {render_slot(@inner_block)}
+      <div class="drawer-content flex min-h-[calc(100vh-4rem)] flex-col">
+        <main class="flex flex-1 flex-col bg-base-200">
+          <div class="mx-auto flex w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+            <div class="flex-1 space-y-6">
+              <%= if @no_wrapper do %>
+                {render_slot(@inner_block)}
+              <% else %>
+                <div class="rounded-lg bg-base-100 p-6">
+                  {render_slot(@inner_block)}
+                </div>
+              <% end %>
             </div>
           </div>
         </main>

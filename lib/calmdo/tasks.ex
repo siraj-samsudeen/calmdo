@@ -38,14 +38,20 @@ defmodule Calmdo.Tasks do
 
   """
   def list_tasks(%Scope{} = _scope) do
-    base_tasks_query()
+    Task
+    |> with_task_index_preloads()
+    |> with_total_hours()
+    |> order_by_recent()
     |> Repo.all()
   end
 
   def list_tasks(%Scope{} = _scope, params) when is_map(params) do
-    base_tasks_query()
+    Task
+    |> with_task_index_preloads()
+    |> with_total_hours()
     |> maybe_where(:status, params["status"])
     |> maybe_where(:assignee_id, params["assignee_id"])
+    |> order_by_recent()
     |> Repo.all()
   end
 
@@ -102,8 +108,6 @@ defmodule Calmdo.Tasks do
 
   """
   def update_task(%Scope{} = scope, %Task{} = task, attrs) do
-    true = task.created_by_id == scope.user.id
-
     with {:ok, task = %Task{}} <-
            task
            |> Task.changeset(attrs, scope)
@@ -126,8 +130,6 @@ defmodule Calmdo.Tasks do
 
   """
   def delete_task(%Scope{} = scope, %Task{} = task) do
-    true = task.created_by_id == scope.user.id
-
     with {:ok, task = %Task{}} <-
            Repo.delete(task) do
       broadcast_task(scope, {:deleted, task})
@@ -145,14 +147,106 @@ defmodule Calmdo.Tasks do
 
   """
   def change_task(%Scope{} = scope, %Task{} = task, attrs \\ %{}) do
-    true = task.created_by_id == scope.user.id
-
     Task.changeset(task, attrs, scope)
   end
 
-  defp base_tasks_query do
-    from t in Task,
-      preload: [:project, :activity_logs, :assignee]
+  @doc """
+  Bulk updates multiple tasks with the same field values.
+
+  ## Examples
+
+      iex> bulk_update_tasks(scope, [1, 2, 3], %{status: :completed})
+      {:ok, 3}
+
+      iex> bulk_update_tasks(scope, [], %{status: :completed})
+      {:ok, 0}
+
+  """
+  def bulk_update_tasks(%Scope{} = scope, task_ids, attrs) when is_list(task_ids) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    # Build the update map with only the provided fields
+    updates =
+      attrs
+      |> Map.put(:updated_at, now)
+
+    # Perform the bulk update
+    {count, _} =
+      from(t in Task, where: t.id in ^task_ids)
+      |> Repo.update_all(set: Map.to_list(updates))
+
+    # Broadcast updates for each task
+    Enum.each(task_ids, fn task_id ->
+      # Fetch the updated task to broadcast
+      task = get_task!(scope, task_id)
+      broadcast_task(scope, {:updated, task})
+    end)
+
+    {:ok, count}
+  rescue
+    error ->
+      {:error, error}
+  end
+
+  @doc """
+  Bulk deletes multiple tasks.
+
+  ## Examples
+
+      iex> bulk_delete_tasks(scope, [1, 2, 3])
+      {:ok, 3}
+
+      iex> bulk_delete_tasks(scope, [])
+      {:ok, 0}
+
+  """
+  def bulk_delete_tasks(%Scope{} = scope, task_ids) when is_list(task_ids) do
+    # Fetch tasks before deleting for broadcasting
+    tasks =
+      from(t in Task, where: t.id in ^task_ids)
+      |> Repo.all()
+
+    # Delete associated activity logs first
+    from(al in Calmdo.ActivityLogs.ActivityLog, where: al.task_id in ^task_ids)
+    |> Repo.delete_all()
+
+    # Perform the bulk delete
+    {count, _} =
+      from(t in Task, where: t.id in ^task_ids)
+      |> Repo.delete_all()
+
+    # Broadcast deletions for each task
+    Enum.each(tasks, fn task ->
+      broadcast_task(scope, {:deleted, task})
+    end)
+
+    {:ok, count}
+  rescue
+    error ->
+      {:error, error}
+  end
+
+  # Query composition helpers
+  defp with_task_index_preloads(query) do
+    from q in query, preload: [:project, :assignee]
+  end
+
+  defp with_total_hours(query) do
+    from t in query,
+      left_join: al in assoc(t, :activity_logs),
+      group_by: t.id,
+      select_merge: %{
+        total_hours:
+          fragment(
+            "CAST(COALESCE(SUM(COALESCE(?, 0) + COALESCE(?, 0) / 60.0), 0) AS float)",
+            al.duration_in_hours,
+            al.duration_in_minutes
+          )
+      }
+  end
+
+  defp order_by_recent(query) do
+    from q in query, order_by: [desc: q.updated_at]
   end
 
   alias Calmdo.Tasks.Project
@@ -186,7 +280,8 @@ defmodule Calmdo.Tasks do
 
   """
   def list_projects(%Scope{} = _scope) do
-    Repo.all(Project)
+    from(p in Project, order_by: [desc: p.updated_at])
+    |> Repo.all()
   end
 
   @doc """
@@ -291,10 +386,11 @@ defmodule Calmdo.Tasks do
   end
 
   def list_tasks_for_project(%Scope{} = _scope, project_id) do
-    from(t in Task,
-      where: t.project_id == ^project_id,
-      preload: [:project, :activity_logs, :assignee]
-    )
+    Task
+    |> with_task_index_preloads()
+    |> with_total_hours()
+    |> maybe_where(:project_id, project_id)
+    |> order_by_recent()
     |> Repo.all()
   end
 end

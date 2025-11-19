@@ -6,7 +6,7 @@ defmodule CalmdoWeb.TaskLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} no_wrapper={true}>
       <.header>
         Listing Tasks
         <:actions>
@@ -44,40 +44,210 @@ defmodule CalmdoWeb.TaskLive.Index do
         <p :if={@tasks_empty?} class="text-sm text-base-content/70">
           No tasks match the current filters.
         </p>
-        <.table
-          id="tasks"
-          rows={@streams.tasks}
-          row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
+        <div class="overflow-x-auto">
+          <table class="table w-full bg-base-100 text-base-content">
+            <thead class="bg-slate-100 text-slate-600">
+              <tr>
+                <th class="w-12">
+                  <input
+                    type="checkbox"
+                    class="checkbox checkbox-sm"
+                    phx-click="toggle_all"
+                    checked={@all_selected?}
+                  />
+                </th>
+                <th>Title</th>
+                <th>Project</th>
+                <th>Assignee</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Due date</th>
+                <th>Hours</th>
+                <th>
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tasks" phx-update="stream">
+              <tr
+                :for={{id, task} <- @streams.tasks}
+                id={id}
+                class="border-b border-slate-100 last:border-b-0 even:bg-white odd:bg-slate-50"
+              >
+                <td>
+                  <label class="cursor-pointer">
+                    <input
+                      type="checkbox"
+                      class="checkbox checkbox-sm"
+                      phx-click="toggle_task"
+                      phx-value-id={task.id}
+                      checked={task.id in @selected_task_ids}
+                    />
+                  </label>
+                </td>
+                <td
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
+                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
+                >
+                  {task.title}
+                </td>
+                <td
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
+                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
+                >
+                  {task.project && task.project.name}
+                </td>
+                <td
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
+                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
+                >
+                  {task.assignee && display_username(task.assignee)}
+                </td>
+                <td
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
+                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
+                >
+                  {format_status(task.status)}
+                </td>
+                <td
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
+                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
+                >
+                  {task.priority}
+                </td>
+                <td
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
+                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
+                >
+                  {task.due_date}
+                </td>
+                <td
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
+                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
+                >
+                  <%= if total_hours(task) > 0 do %>
+                    <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
+                      {format_hours(total_hours(task))}
+                    </.link>
+                  <% else %>
+                    {format_hours(total_hours(task))}
+                  <% end %>
+                </td>
+                <td class="w-0 font-semibold">
+                  <.link navigate={log_time_path(task)} class="link link-primary">
+                    Log Time
+                  </.link>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <%!-- Bold Modern Bulk Edit Panel - Sticky at bottom --%>
+        <div
+          :if={@selected_task_ids != []}
+          class="fixed bottom-0 left-0 lg:left-72 right-0 bg-base-100 border-t-2 border-primary/30 shadow-2xl z-50"
         >
-          <:col :let={{_id, task}} label="Title">{task.title}</:col>
-          <:col :let={{_id, task}} label="Project">{task.project && task.project.name}</:col>
-          <:col :let={{_id, task}} label="Assignee">{task.assignee && task.assignee.email}</:col>
-          <:col :let={{_id, task}} label="Status">{format_status(task.status)}</:col>
-          <:col :let={{_id, task}} label="Priority">{task.priority}</:col>
-          <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
-          <:col :let={{_id, task}} label="Hours">
-            <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
-              {format_hours(total_hours(task))}
-            </.link>
-          </:col>
-          <:action :let={{_id, task}}>
-            <.link navigate={log_time_path(task)}>Log Time</.link>
-          </:action>
-          <:action :let={{_id, task}}>
-            <div class="sr-only">
-              <.link navigate={~p"/tasks/#{task}"}>Show</.link>
+          <.form for={%{}} phx-submit="apply_bulk_edit">
+            <div class="bg-primary text-primary-content px-4 py-2 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <.icon name="hero-pencil-square" class="w-5 h-5" />
+                <span class="font-semibold">Bulk Edit</span>
+                <div class="badge badge-sm bg-primary-content text-primary font-bold">
+                  {length(@selected_task_ids)} selected
+                </div>
+              </div>
+              <button
+                type="button"
+                phx-click="cancel_bulk_edit"
+                class="btn btn-ghost btn-xs text-primary-content hover:bg-primary-content/20"
+              >
+                <.icon name="hero-x-mark" class="w-4 h-4" />
+              </button>
             </div>
-            <.link navigate={~p"/tasks/#{task}/edit"}>Edit</.link>
-          </:action>
-          <:action :let={{id, task}}>
-            <.link
-              phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{id}")}
-              data-confirm="Are you sure?"
-            >
-              Delete
-            </.link>
-          </:action>
-        </.table>
+
+            <div class="p-4">
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-semibold text-xs uppercase tracking-wide">
+                      <.icon name="hero-folder" class="w-3 h-3 inline" /> Project
+                    </span>
+                  </label>
+                  <select name="project_id" class="select select-bordered select-sm">
+                    <option value="">No change</option>
+                    <option :for={project <- @projects} value={project.id}>
+                      {project.name}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-semibold text-xs uppercase tracking-wide">
+                      <.icon name="hero-user" class="w-3 h-3 inline" /> Assignee
+                    </span>
+                  </label>
+                  <select name="assignee_id" class="select select-bordered select-sm">
+                    <option value="">No change</option>
+                    <option :for={assignee <- @assignees} value={assignee.id}>
+                      {display_username(assignee)}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-semibold text-xs uppercase tracking-wide">
+                      <.icon name="hero-flag" class="w-3 h-3 inline" /> Status
+                    </span>
+                  </label>
+                  <select name="status" class="select select-bordered select-sm">
+                    <option value="">No change</option>
+                    <option value="started">Started</option>
+                    <option value="work_in_progress">Work In Progress</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-semibold text-xs uppercase tracking-wide">
+                      <.icon name="hero-signal" class="w-3 h-3 inline" /> Priority
+                    </span>
+                  </label>
+                  <select name="priority" class="select select-bordered select-sm">
+                    <option value="">No change</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex gap-2 justify-between mt-4 pt-4 border-t border-base-300">
+                <.button
+                  type="button"
+                  phx-click="bulk_delete"
+                  data-confirm={"Are you sure you want to delete #{length(@selected_task_ids)} task(s)?"}
+                  class="btn-sm btn-error gap-1"
+                >
+                  <.icon name="hero-trash" class="w-4 h-4" />
+                  Delete {length(@selected_task_ids)} task(s)
+                </.button>
+                <div class="flex gap-2">
+                  <.button type="submit" variant="primary" class="btn-sm gap-1">
+                    <.icon name="hero-check" class="w-4 h-4" />
+                    Apply Changes
+                  </.button>
+                  <.button type="button" phx-click="cancel_bulk_edit" class="btn-sm btn-ghost">
+                    Cancel
+                  </.button>
+                </div>
+              </div>
+            </div>
+          </.form>
+        </div>
       </div>
     </Layouts.app>
     """
@@ -106,6 +276,9 @@ defmodule CalmdoWeb.TaskLive.Index do
       socket
       |> assign(:statuses, Ecto.Enum.values(Calmdo.Tasks.Task, :status))
       |> assign(:assignees, Calmdo.Accounts.list_users())
+      |> assign(:projects, Tasks.list_projects(socket.assigns.current_scope))
+      |> assign(:selected_task_ids, [])
+      |> assign(:all_selected?, false)
 
     {:ok, socket}
   end
@@ -118,17 +291,11 @@ defmodule CalmdoWeb.TaskLive.Index do
       socket
       |> assign(:filters, %{status: params["status"], assignee_id: params["assignee_id"]})
       |> assign(:tasks_empty?, tasks == [])
+      |> assign(:selected_task_ids, [])
+      |> assign(:all_selected?, false)
       |> stream(:tasks, tasks, reset: true)
 
     {:noreply, socket}
-  end
-
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    task = Tasks.get_task!(socket.assigns.current_scope, id)
-
-    {:ok, _} = Tasks.delete_task(socket.assigns.current_scope, task)
-    {:noreply, stream_delete(socket, :tasks, task)}
   end
 
   @impl true
@@ -146,16 +313,112 @@ defmodule CalmdoWeb.TaskLive.Index do
   end
 
   @impl true
+  def handle_event("toggle_task", %{"id" => id}, socket) do
+    id = String.to_integer(id)
+    selected = socket.assigns.selected_task_ids
+
+    updated_selected =
+      if id in selected do
+        List.delete(selected, id)
+      else
+        [id | selected]
+      end
+
+    {:noreply, assign(socket, selected_task_ids: updated_selected, all_selected?: false)}
+  end
+
+  @impl true
+  def handle_event("toggle_all", _params, socket) do
+    all_selected? = socket.assigns.all_selected?
+
+    updated_selected =
+      if all_selected? do
+        []
+      else
+        # Get all task IDs from the stream
+        Tasks.list_tasks(socket.assigns.current_scope, socket.assigns.filters)
+        |> Enum.map(& &1.id)
+      end
+
+    {:noreply, assign(socket, selected_task_ids: updated_selected, all_selected?: !all_selected?)}
+  end
+
+  @impl true
+  def handle_event("cancel_bulk_edit", _params, socket) do
+    {:noreply, assign(socket, selected_task_ids: [], all_selected?: false)}
+  end
+
+  @impl true
+  def handle_event("bulk_delete", _params, socket) do
+    case Tasks.bulk_delete_tasks(
+           socket.assigns.current_scope,
+           socket.assigns.selected_task_ids
+         ) do
+      {:ok, count} ->
+        socket =
+          socket
+          |> put_flash(:info, "Successfully deleted #{count} task(s)")
+          |> assign(selected_task_ids: [], all_selected?: false)
+
+        {:noreply, socket}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Failed to delete tasks")}
+    end
+  end
+
+  @impl true
+  def handle_event("apply_bulk_edit", params, socket) do
+    # Build updates map from non-empty form values
+    updates =
+      params
+      |> Map.take(["status", "priority", "assignee_id", "project_id"])
+      |> Enum.reject(fn {_k, v} -> v == "" end)
+      |> Enum.map(&parse_bulk_edit_param/1)
+      |> Enum.into(%{})
+
+    if updates == %{} do
+      {:noreply, put_flash(socket, :error, "Please select at least one field to update")}
+    else
+      # Apply bulk update
+      case Tasks.bulk_update_tasks(
+             socket.assigns.current_scope,
+             socket.assigns.selected_task_ids,
+             updates
+           ) do
+        {:ok, _count} ->
+          socket =
+            socket
+            |> put_flash(:info, "Successfully updated #{length(socket.assigns.selected_task_ids)} task(s)")
+            |> assign(selected_task_ids: [], all_selected?: false)
+
+          {:noreply, socket}
+
+        {:error, _reason} ->
+          {:noreply, put_flash(socket, :error, "Failed to update tasks")}
+      end
+    end
+  end
+
+  @impl true
   def handle_info({type, %Calmdo.Tasks.Task{}}, socket)
       when type in [:created, :updated, :deleted] do
     {:noreply,
      stream(socket, :tasks, Tasks.list_tasks(socket.assigns.current_scope), reset: true)}
   end
 
+  defp parse_bulk_edit_param({"status", value}), do: {:status, String.to_existing_atom(value)}
+  defp parse_bulk_edit_param({"priority", value}), do: {:priority, String.to_existing_atom(value)}
+
+  defp parse_bulk_edit_param({"assignee_id", value}),
+    do: {:assignee_id, String.to_integer(value)}
+
+  defp parse_bulk_edit_param({"project_id", value}),
+    do: {:project_id, String.to_integer(value)}
+
   defp total_hours(task) do
-    Enum.reduce(task.activity_logs || [], 0, fn al, acc ->
-      (al.duration_in_hours || 0) + (acc + (al.duration_in_minutes || 0) / 60)
-    end)
+    # total_hours is calculated in the database query
+    Map.get(task, :total_hours, 0) || 0
   end
 
   defp format_hours(value) when is_number(value) do
@@ -175,4 +438,12 @@ defmodule CalmdoWeb.TaskLive.Index do
     |> Enum.map(&String.capitalize/1)
     |> Enum.join(" ")
   end
+
+  defp display_username(%{email: email}) when is_binary(email) do
+    email
+    |> String.split("@")
+    |> List.first()
+  end
+
+  defp display_username(_), do: ""
 end

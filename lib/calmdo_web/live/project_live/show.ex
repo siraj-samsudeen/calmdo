@@ -40,15 +40,19 @@ defmodule CalmdoWeb.ProjectLive.Show do
           <.table
             id="project-tasks"
             rows={@streams.tasks_rows}
-            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
+            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}/edit") end}
           >
             <:col :let={{_id, task}} label="Title">{task.title}</:col>
             <:col :let={{_id, task}} label="Status">{task.status}</:col>
             <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
             <:col :let={{_id, task}} label="Hours">
-              <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
+              <%= if total_hours(task) > 0 do %>
+                <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
+                  {format_hours(total_hours(task))}
+                </.link>
+              <% else %>
                 {format_hours(total_hours(task))}
-              </.link>
+              <% end %>
             </:col>
             <:action :let={{_id, task}}>
               <.link navigate={
@@ -152,9 +156,8 @@ defmodule CalmdoWeb.ProjectLive.Show do
   end
 
   defp total_hours(task) do
-    Enum.reduce(task.activity_logs || [], 0, fn al, acc ->
-      (al.duration_in_hours || 0) + (acc + (al.duration_in_minutes || 0) / 60)
-    end)
+    # total_hours is calculated in the database query
+    Map.get(task, :total_hours, 0) || 0
   end
 
   defp format_hours(value) when is_number(value) do
