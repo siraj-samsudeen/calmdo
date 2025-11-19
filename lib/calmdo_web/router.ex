@@ -17,15 +17,6 @@ defmodule CalmdoWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", CalmdoWeb do
-    pipe_through [:browser, :require_authenticated_user]
-
-    live_session :home,
-      on_mount: [{CalmdoWeb.UserAuth, :require_authenticated}] do
-      live "/", HomeLive.Index, :index
-    end
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", CalmdoWeb do
   #   pipe_through :api
@@ -55,6 +46,8 @@ defmodule CalmdoWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{CalmdoWeb.UserAuth, :require_authenticated}] do
+      live "/", HomeLive.Index, :index
+
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
 
