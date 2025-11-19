@@ -216,8 +216,8 @@ defmodule CalmdoWeb.CoreComponents do
           id={@id}
           name={@name}
           class={[
-            @class ||
-              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
+            "input input-bordered w-full",
+            @class,
             @errors != [] && (@error_class || "border-error focus:ring-error/40")
           ]}
           multiple={@multiple}
@@ -241,11 +241,10 @@ defmodule CalmdoWeb.CoreComponents do
           id={@id}
           name={@name}
           class={[
-            @class ||
-              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
+            "textarea textarea-bordered w-full",
+            @class,
             @errors != [] && (@error_class || "border-error focus:ring-error/40")
           ]}
-          phx-update="ignore"
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
       </label>
@@ -266,8 +265,8 @@ defmodule CalmdoWeb.CoreComponents do
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
-            @class ||
-              "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30",
+            "input input-bordered w-full",
+            @class,
             @errors != [] && (@error_class || "border-error focus:ring-error/40")
           ]}
           {@rest}
@@ -343,9 +342,9 @@ defmodule CalmdoWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="overflow-x-auto">
-      <table class="table w-full bg-base-100 text-base-content">
-        <thead class="bg-slate-100 text-slate-600">
+    <div class="overflow-x-auto rounded-box border border-base-content/5 shadow-sm dark:shadow-black">
+      <table class="table w-full">
+        <thead>
           <tr>
             <th :for={col <- @col}>{col[:label]}</th>
             <th :if={@action != []}>
@@ -357,15 +356,12 @@ defmodule CalmdoWeb.CoreComponents do
           <tr
             :for={row <- @rows}
             id={@row_id && @row_id.(row)}
-            class="border-b border-slate-100 last:border-b-0 even:bg-white odd:bg-slate-50"
+            class={[@row_click && "hover:bg-base-200"]}
           >
             <td
               :for={col <- @col}
               phx-click={@row_click && @row_click.(row)}
-              class={[
-                "align-middle",
-                @row_click && "hover:cursor-pointer hover:text-[#2563eb]"
-              ]}
+              class={[@row_click && "cursor-pointer hover:text-primary"]}
             >
               {render_slot(col, @row_item.(row))}
             </td>
@@ -494,7 +490,7 @@ defmodule CalmdoWeb.CoreComponents do
   def markdown(assigns) do
     ~H"""
     <div class={[
-      "prose prose-a:text-primary prose-a:hover:text-primary/70 dark:prose-invert",
+      "prose prose-a:link prose-a:link-primary",
       @class
     ]}>
       {raw(Earmark.as_html!(@text) |> HtmlSanitizeEx.markdown_html())}
