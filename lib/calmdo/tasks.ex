@@ -192,6 +192,44 @@ defmodule Calmdo.Tasks do
       {:error, error}
   end
 
+  @doc """
+  Bulk deletes multiple tasks.
+
+  ## Examples
+
+      iex> bulk_delete_tasks(scope, [1, 2, 3])
+      {:ok, 3}
+
+      iex> bulk_delete_tasks(scope, [])
+      {:ok, 0}
+
+  """
+  def bulk_delete_tasks(%Scope{} = scope, task_ids) when is_list(task_ids) do
+    # Fetch tasks before deleting for broadcasting
+    tasks =
+      from(t in Task, where: t.id in ^task_ids)
+      |> Repo.all()
+
+    # Delete associated activity logs first
+    from(al in Calmdo.ActivityLogs.ActivityLog, where: al.task_id in ^task_ids)
+    |> Repo.delete_all()
+
+    # Perform the bulk delete
+    {count, _} =
+      from(t in Task, where: t.id in ^task_ids)
+      |> Repo.delete_all()
+
+    # Broadcast deletions for each task
+    Enum.each(tasks, fn task ->
+      broadcast_task(scope, {:deleted, task})
+    end)
+
+    {:ok, count}
+  rescue
+    error ->
+      {:error, error}
+  end
+
   # Query composition helpers
   defp with_task_preloads(query) do
     from q in query, preload: [:project, :activity_logs, :assignee]

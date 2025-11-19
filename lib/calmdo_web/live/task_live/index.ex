@@ -86,63 +86,57 @@ defmodule CalmdoWeb.TaskLive.Index do
                   </label>
                 </td>
                 <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}")}
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
                   class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
                 >
                   {task.title}
                 </td>
                 <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}")}
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
                   class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
                 >
                   {task.project && task.project.name}
                 </td>
                 <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}")}
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
                   class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
                 >
                   {task.assignee && task.assignee.email}
                 </td>
                 <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}")}
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
                   class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
                 >
                   {format_status(task.status)}
                 </td>
                 <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}")}
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
                   class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
                 >
                   {task.priority}
                 </td>
                 <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}")}
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
                   class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
                 >
                   {task.due_date}
                 </td>
                 <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}")}
+                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
                   class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
                 >
-                  <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
+                  <%= if total_hours(task) > 0 do %>
+                    <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
+                      {format_hours(total_hours(task))}
+                    </.link>
+                  <% else %>
                     {format_hours(total_hours(task))}
-                  </.link>
+                  <% end %>
                 </td>
                 <td class="w-0 font-semibold">
-                  <div class="flex gap-4">
-                    <.link navigate={log_time_path(task)}>Log Time</.link>
-                    <div class="sr-only">
-                      <.link navigate={~p"/tasks/#{task}"}>Show</.link>
-                    </div>
-                    <.link navigate={~p"/tasks/#{task}/edit"}>Edit</.link>
-                    <.link
-                      phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{id}")}
-                      data-confirm="Are you sure?"
-                    >
-                      Delete
-                    </.link>
-                  </div>
+                  <.link navigate={log_time_path(task)} class="link link-primary">
+                    Log Time
+                  </.link>
                 </td>
               </tr>
             </tbody>
@@ -231,14 +225,25 @@ defmodule CalmdoWeb.TaskLive.Index do
                 </div>
               </div>
 
-              <div class="flex gap-2 justify-end mt-4 pt-4 border-t border-base-300">
-                <.button type="submit" variant="primary" class="btn-sm gap-1">
-                  <.icon name="hero-check" class="w-4 h-4" />
-                  Apply to {length(@selected_task_ids)} task(s)
+              <div class="flex gap-2 justify-between mt-4 pt-4 border-t border-base-300">
+                <.button
+                  type="button"
+                  phx-click="bulk_delete"
+                  data-confirm={"Are you sure you want to delete #{length(@selected_task_ids)} task(s)?"}
+                  class="btn-sm btn-error gap-1"
+                >
+                  <.icon name="hero-trash" class="w-4 h-4" />
+                  Delete {length(@selected_task_ids)} task(s)
                 </.button>
-                <.button type="button" phx-click="cancel_bulk_edit" class="btn-sm btn-ghost">
-                  Cancel
-                </.button>
+                <div class="flex gap-2">
+                  <.button type="submit" variant="primary" class="btn-sm gap-1">
+                    <.icon name="hero-check" class="w-4 h-4" />
+                    Apply Changes
+                  </.button>
+                  <.button type="button" phx-click="cancel_bulk_edit" class="btn-sm btn-ghost">
+                    Cancel
+                  </.button>
+                </div>
               </div>
             </div>
           </.form>
@@ -294,14 +299,6 @@ defmodule CalmdoWeb.TaskLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    task = Tasks.get_task!(socket.assigns.current_scope, id)
-
-    {:ok, _} = Tasks.delete_task(socket.assigns.current_scope, task)
-    {:noreply, stream_delete(socket, :tasks, task)}
-  end
-
-  @impl true
   def handle_event("filter", params, socket) do
     cleaned_params =
       params
@@ -349,6 +346,25 @@ defmodule CalmdoWeb.TaskLive.Index do
   @impl true
   def handle_event("cancel_bulk_edit", _params, socket) do
     {:noreply, assign(socket, selected_task_ids: [], all_selected?: false)}
+  end
+
+  @impl true
+  def handle_event("bulk_delete", _params, socket) do
+    case Tasks.bulk_delete_tasks(
+           socket.assigns.current_scope,
+           socket.assigns.selected_task_ids
+         ) do
+      {:ok, count} ->
+        socket =
+          socket
+          |> put_flash(:info, "Successfully deleted #{count} task(s)")
+          |> assign(selected_task_ids: [], all_selected?: false)
+
+        {:noreply, socket}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Failed to delete tasks")}
+    end
   end
 
   @impl true

@@ -65,13 +65,8 @@ defmodule CalmdoWeb.TaskLiveTest do
     end
 
     test "updates task in listing", %{conn: conn, task: task} do
-      {:ok, index_live, _html} = live(conn, ~p"/tasks")
-
-      assert {:ok, form_live, _html} =
-               index_live
-               |> element("#tasks-#{task.id} a", "Edit")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/tasks/#{task}/edit")
+      # Navigate directly to edit page (clicking row now goes to edit)
+      assert {:ok, form_live, _html} = live(conn, ~p"/tasks/#{task}/edit")
 
       assert render(form_live) =~ "Edit Task"
 
@@ -90,10 +85,19 @@ defmodule CalmdoWeb.TaskLiveTest do
       assert html =~ "some updated title"
     end
 
-    test "deletes task in listing", %{conn: conn, task: task} do
+    test "deletes task in listing via bulk delete", %{conn: conn, task: task} do
       {:ok, index_live, _html} = live(conn, ~p"/tasks")
 
-      assert index_live |> element("#tasks-#{task.id} a", "Delete") |> render_click()
+      # Select the task
+      index_live
+      |> element("input[type=checkbox][phx-value-id='#{task.id}']")
+      |> render_click()
+
+      # Click bulk delete button
+      assert index_live
+             |> element("button", "Delete 1 task(s)")
+             |> render_click()
+
       refute has_element?(index_live, "#tasks-#{task.id}")
     end
   end
