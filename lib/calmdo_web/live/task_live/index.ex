@@ -143,10 +143,10 @@ defmodule CalmdoWeb.TaskLive.Index do
           </table>
         </div>
 
-        <%!-- Bold Modern Bulk Edit Panel --%>
+        <%!-- Bold Modern Bulk Edit Panel - Sticky at bottom --%>
         <div
           :if={@selected_task_ids != []}
-          class="mt-6 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border-2 border-primary/30 shadow-lg overflow-hidden"
+          class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary/5 to-primary/10 border-t-2 border-primary/30 shadow-2xl z-50"
         >
           <.form for={%{}} phx-submit="apply_bulk_edit">
             <div class="bg-primary text-primary-content px-4 py-2 flex items-center justify-between">
