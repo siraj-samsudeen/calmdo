@@ -329,11 +329,18 @@ defmodule CalmdoWeb.CoreComponents do
     default: &Function.identity/1,
     doc: "the function for mapping each row before calling the :col and :action slots"
 
+  attr :select?, :boolean, default: false, doc: "enables a checkbox column for row selection"
+  attr :all_selected?, :boolean, default: false, doc: "whether the select all checkbox is checked"
+  attr :selected_ids, :list, default: [], doc: "the list of selected row IDs"
+  attr :select_all_click, :string, default: nil, doc: "the event to fire when the select all checkbox is clicked"
+  attr :row_select_click, :string, default: nil, doc: "the event to fire when a row checkbox is clicked"
+
   slot :col, required: true do
     attr :label, :string
   end
 
   slot :action, doc: "the slot for showing user actions in the last table column"
+  slot :select, doc: "checkbox column override"
 
   def table(assigns) do
     assigns =
@@ -346,6 +353,15 @@ defmodule CalmdoWeb.CoreComponents do
       <table class="table w-full">
         <thead>
           <tr>
+            <!-- Optional Select-All Checkbox -->
+            <th :if={@select?} class="w-12">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-sm"
+                phx-click={@select_all_click}
+                checked={@all_selected?}
+              />
+            </th>
             <th :for={col <- @col}>{col[:label]}</th>
             <th :if={@action != []}>
               <span class="sr-only">{gettext("Actions")}</span>
@@ -358,6 +374,18 @@ defmodule CalmdoWeb.CoreComponents do
             id={@row_id && @row_id.(row)}
             class={[@row_click && "hover:bg-base-200"]}
           >
+            <td :if={@select?}>
+              <label class="cursor-pointer">
+                <% {_id, mapped} = @row_item.(row) %>
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  phx-click={@row_select_click}
+                  phx-value-id={mapped.id}
+                  checked={mapped.id in @selected_ids}
+                />
+              </label>
+            </td>
             <td
               :for={col <- @col}
               phx-click={@row_click && @row_click.(row)}

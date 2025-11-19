@@ -44,104 +44,38 @@ defmodule CalmdoWeb.TaskLive.Index do
         <p :if={@tasks_empty?} class="text-sm text-base-content/70">
           No tasks match the current filters.
         </p>
-        <div class="overflow-x-auto">
-          <table class="table w-full bg-base-100 text-base-content">
-            <thead class="bg-slate-100 text-slate-600">
-              <tr>
-                <th class="w-12">
-                  <input
-                    type="checkbox"
-                    class="checkbox checkbox-sm"
-                    phx-click="toggle_all"
-                    checked={@all_selected?}
-                  />
-                </th>
-                <th>Title</th>
-                <th>Project</th>
-                <th>Assignee</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Due date</th>
-                <th>Hours</th>
-                <th>
-                  <span class="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody id="tasks" phx-update="stream">
-              <tr
-                :for={{id, task} <- @streams.tasks}
-                id={id}
-                class="border-b border-slate-100 last:border-b-0 even:bg-white odd:bg-slate-50"
-              >
-                <td>
-                  <label class="cursor-pointer">
-                    <input
-                      type="checkbox"
-                      class="checkbox checkbox-sm"
-                      phx-click="toggle_task"
-                      phx-value-id={task.id}
-                      checked={task.id in @selected_task_ids}
-                    />
-                  </label>
-                </td>
-                <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
-                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
-                >
-                  {task.title}
-                </td>
-                <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
-                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
-                >
-                  {task.project && task.project.name}
-                </td>
-                <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
-                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
-                >
-                  {task.assignee && display_username(task.assignee)}
-                </td>
-                <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
-                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
-                >
-                  {format_status(task.status)}
-                </td>
-                <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
-                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
-                >
-                  {task.priority}
-                </td>
-                <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
-                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
-                >
-                  {task.due_date}
-                </td>
-                <td
-                  phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
-                  class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
-                >
-                  <%= if total_hours(task) > 0 do %>
-                    <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
-                      {format_hours(total_hours(task))}
-                    </.link>
-                  <% else %>
-                    {format_hours(total_hours(task))}
-                  <% end %>
-                </td>
-                <td class="w-0 font-semibold">
-                  <.link navigate={log_time_path(task)} class="link link-primary">
-                    Log Time
-                  </.link>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <.table
+          id="tasks"
+          rows={@streams.tasks}
+          select?={true}
+          all_selected?={@all_selected?}
+          selected_ids={@selected_task_ids}
+          select_all_click="toggle_all"
+          row_select_click="toggle_task"
+          row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}/edit") end}
+        >
+          <:col :let={{_id, task}} label="Title">{task.title}</:col>
+          <:col :let={{_id, task}} label="Project">{task.project && task.project.name}</:col>
+          <:col :let={{_id, task}} label="Assignee">
+            {task.assignee && display_username(task.assignee)}
+          </:col>
+          <:col :let={{_id, task}} label="Status">{format_status(task.status)}</:col>
+          <:col :let={{_id, task}} label="Priority">{task.priority}</:col>
+          <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
+          <:col :let={{_id, task}} label="Hours">
+            <%= if total_hours(task) > 0 do %>
+              <.link navigate={~p"/activity_logs?task_id=#{task.id}"} class="link">
+                {format_hours(total_hours(task))}
+              </.link>
+            <% else %>
+              {format_hours(total_hours(task))}
+            <% end %>
+          </:col>
+
+          <:action :let={{_id, task}}>
+            <.link navigate={log_time_path(task)} class="link link-primary">Log Time</.link>
+          </:action>
+        </.table>
 
         <%!-- Bold Modern Bulk Edit Panel - Sticky at bottom --%>
         <div
@@ -237,8 +171,7 @@ defmodule CalmdoWeb.TaskLive.Index do
                 </.button>
                 <div class="flex gap-2">
                   <.button type="submit" variant="primary" class="btn-sm gap-1">
-                    <.icon name="hero-check" class="w-4 h-4" />
-                    Apply Changes
+                    <.icon name="hero-check" class="w-4 h-4" /> Apply Changes
                   </.button>
                   <.button type="button" phx-click="cancel_bulk_edit" class="btn-sm btn-ghost">
                     Cancel
@@ -389,7 +322,10 @@ defmodule CalmdoWeb.TaskLive.Index do
         {:ok, _count} ->
           socket =
             socket
-            |> put_flash(:info, "Successfully updated #{length(socket.assigns.selected_task_ids)} task(s)")
+            |> put_flash(
+              :info,
+              "Successfully updated #{length(socket.assigns.selected_task_ids)} task(s)"
+            )
             |> assign(selected_task_ids: [], all_selected?: false)
 
           {:noreply, socket}
