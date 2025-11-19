@@ -154,6 +154,44 @@ defmodule Calmdo.Tasks do
     Task.changeset(task, attrs, scope)
   end
 
+  @doc """
+  Bulk updates multiple tasks with the same field values.
+
+  ## Examples
+
+      iex> bulk_update_tasks(scope, [1, 2, 3], %{status: :completed})
+      {:ok, 3}
+
+      iex> bulk_update_tasks(scope, [], %{status: :completed})
+      {:ok, 0}
+
+  """
+  def bulk_update_tasks(%Scope{} = scope, task_ids, attrs) when is_list(task_ids) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    # Build the update map with only the provided fields
+    updates =
+      attrs
+      |> Map.put(:updated_at, now)
+
+    # Perform the bulk update
+    {count, _} =
+      from(t in Task, where: t.id in ^task_ids)
+      |> Repo.update_all(set: Map.to_list(updates))
+
+    # Broadcast updates for each task
+    Enum.each(task_ids, fn task_id ->
+      # Fetch the updated task to broadcast
+      task = get_task!(scope, task_id)
+      broadcast_task(scope, {:updated, task})
+    end)
+
+    {:ok, count}
+  rescue
+    error ->
+      {:error, error}
+  end
+
   # Query composition helpers
   defp with_task_preloads(query) do
     from q in query, preload: [:project, :activity_logs, :assignee]
