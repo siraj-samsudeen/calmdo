@@ -55,6 +55,20 @@ defmodule Calmdo.ActivityLogs do
   end
 
   @doc """
+  Returns recent activity logs for the home page feed.
+  Defaults to last 2 days (today and yesterday) to improve performance.
+  """
+  def list_recent_activity_logs(%Scope{} = _scope, days_back \\ 2) do
+    cutoff_date = Date.utc_today() |> Date.add(-days_back)
+
+    ActivityLog
+    |> with_preloads()
+    |> where([al], al.date >= ^cutoff_date)
+    |> order_by_recent()
+    |> Repo.all()
+  end
+
+  @doc """
   Gets a single activity_log.
 
   Raises `Ecto.NoResultsError` if the Activity log does not exist.

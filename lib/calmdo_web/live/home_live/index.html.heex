@@ -130,6 +130,24 @@
           </div>
         </div>
       <% end %>
+
+      <!-- Load More Button -->
+      <div class="text-center mt-8 pt-8 border-t border-gray-200">
+        <p class="text-sm text-gray-500 mb-3">
+          Showing activity from the last <%= @days_back %> days
+        </p>
+        <button phx-click="load_more" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Load More (7 more days)
+        </button>
+      </div>
     </div>
   <% end %>
 </div>

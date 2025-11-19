@@ -13,36 +13,53 @@ defmodule CalmdoWeb.HomeLive.Index do
   end
 
   @impl true
-  def handle_params(_params, _uri, socket) do
-    activity_logs = ActivityLogs.list_activity_logs(socket.assigns.current_scope)
+  def handle_params(params, _uri, socket) do
+    days_back = String.to_integer(params["days"] || "2")
+    activity_logs = ActivityLogs.list_recent_activity_logs(socket.assigns.current_scope, days_back)
     grouped_activities = group_by_date(activity_logs)
 
     {:noreply,
      socket
      |> assign(:grouped_activities, grouped_activities)
+     |> assign(:days_back, days_back)
      |> assign(:page_title, "Activity Feed")}
   end
 
   @impl true
   def handle_info({:created, _activity_log}, socket) do
-    activity_logs = ActivityLogs.list_activity_logs(socket.assigns.current_scope)
+    activity_logs =
+      ActivityLogs.list_recent_activity_logs(socket.assigns.current_scope, socket.assigns.days_back)
+
     grouped_activities = group_by_date(activity_logs)
 
     {:noreply, assign(socket, :grouped_activities, grouped_activities)}
   end
 
   def handle_info({:updated, _activity_log}, socket) do
-    activity_logs = ActivityLogs.list_activity_logs(socket.assigns.current_scope)
+    activity_logs =
+      ActivityLogs.list_recent_activity_logs(socket.assigns.current_scope, socket.assigns.days_back)
+
     grouped_activities = group_by_date(activity_logs)
 
     {:noreply, assign(socket, :grouped_activities, grouped_activities)}
   end
 
   def handle_info({:deleted, _activity_log}, socket) do
-    activity_logs = ActivityLogs.list_activity_logs(socket.assigns.current_scope)
+    activity_logs =
+      ActivityLogs.list_recent_activity_logs(socket.assigns.current_scope, socket.assigns.days_back)
+
     grouped_activities = group_by_date(activity_logs)
 
     {:noreply, assign(socket, :grouped_activities, grouped_activities)}
+  end
+
+  @impl true
+  def handle_event("load_more", _params, socket) do
+    new_days = socket.assigns.days_back + 7
+
+    {:noreply,
+     socket
+     |> push_patch(to: ~p"/?days=#{new_days}")}
   end
 
   defp group_by_date(activity_logs) do

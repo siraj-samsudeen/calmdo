@@ -21,7 +21,7 @@ defmodule Calmdo.ActivityLogsFixtures do
 
     attrs =
       Enum.into(attrs, %{
-        date: ~D[2025-09-21],
+        date: Date.utc_today(),
         duration_in_hours: 42,
         duration_in_minutes: 0,
         notes: "some notes",
