@@ -31,7 +31,7 @@ defmodule CalmdoWeb.ProjectLive.Show do
             <h2 class="text-base font-semibold">Tasks</h2>
             <.link
               navigate={~p"/tasks/new?return_to=projects&project_id=#{@project.id}"}
-              class="btn btn-sm"
+              class="btn btn-sm btn-primary"
             >
               <.icon name="hero-plus" /> New Task
             </.link>
@@ -65,7 +65,7 @@ defmodule CalmdoWeb.ProjectLive.Show do
             <h2 class="text-base font-semibold">Logs</h2>
             <.link
               navigate={~p"/activity_logs/new?return_to=projects&project_id=#{@project.id}"}
-              class="btn btn-sm"
+              class="btn btn-sm btn-primary"
             >
               <.icon name="hero-plus" /> New Log
             </.link>

@@ -342,8 +342,8 @@ defmodule CalmdoWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="overflow-x-auto">
-      <table class="table table-zebra w-full">
+    <div class="overflow-x-auto rounded-box border border-base-content/5 shadow-sm dark:shadow-black">
+      <table class="table w-full">
         <thead>
           <tr>
             <th :for={col <- @col}>{col[:label]}</th>
@@ -356,7 +356,7 @@ defmodule CalmdoWeb.CoreComponents do
           <tr
             :for={row <- @rows}
             id={@row_id && @row_id.(row)}
-            class={[@row_click && "hover"]}
+            class={[@row_click && "hover:bg-base-200"]}
           >
             <td
               :for={col <- @col}

@@ -39,16 +39,19 @@ defmodule CalmdoWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="navbar sticky top-0 z-40 bg-base-100 border-b px-4 sm:px-6 lg:px-8">
+    <header class="navbar sticky top-0 z-40 bg-primary border-b border-base-300 px-4 sm:px-6 lg:px-8">
       <div class="flex-1">
         <label
           for="layout-drawer"
-          class="btn btn-square btn-ghost lg:hidden"
+          class="btn btn-square btn-ghost text-primary-content hover:text-primary focus:text-primary lg:hidden"
           aria-label="Toggle menu"
         >
           <.icon name="hero-bars-3" />
         </label>
-        <.link href={~p"/"} class="btn btn-ghost text-lg">
+        <.link
+          href={~p"/"}
+          class="btn btn-ghost text-lg text-primary-content hover:text-primary focus:text-primary"
+        >
           Calmdo
         </.link>
       </div>
@@ -58,19 +61,19 @@ defmodule CalmdoWeb.Layouts do
           <%= if @current_scope && @current_scope.user do %>
             <li>
               <div class="dropdown dropdown-end">
-                <label tabindex="0" class="btn btn-ghost gap-2">
+                <label tabindex="0" class="btn btn-ghost gap-2 group">
                   <div class="avatar avatar-placeholder">
                     <div class="size-8 rounded-full bg-base-300 text-base-content">
                       <span>{user_initial(@current_scope.user)}</span>
                     </div>
                   </div>
-                  <span class="hidden sm:inline max-w-[220px] truncate">
+                  <span class="hidden sm:inline max-w-[220px] truncate text-primary-content group-hover:text-primary group-focus:text-primary">
                     {display_user_email(@current_scope.user)}
                   </span>
                 </label>
                 <ul
                   tabindex="0"
-                  class="menu dropdown-content mt-3 w-56 rounded-box bg-base-100 p-2 shadow-lg"
+                  class="menu dropdown-content mt-3 w-56 rounded-box bg-base-200 p-2 shadow-lg"
                 >
                   <li class="menu-title">{display_user_email(@current_scope.user)}</li>
                   <li><.link href={~p"/users/settings"}>Settings</.link></li>
@@ -97,9 +100,9 @@ defmodule CalmdoWeb.Layouts do
     <div class="drawer lg:drawer-open min-h-[calc(100vh-4rem)]">
       <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
       <div class="drawer-content flex">
-        <main class="flex-1">
-          <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-            <div class="rounded-lg border bg-base-100 p-6 shadow-sm">
+        <main class="flex-1 bg-base-100">
+          <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <div class="rounded-lg bg-base-100 p-6">
               {render_slot(@inner_block)}
             </div>
           </div>
@@ -108,27 +111,29 @@ defmodule CalmdoWeb.Layouts do
       <div class="drawer-side h-[calc(100dvh-4rem)] top-16">
         <label for="layout-drawer" class="drawer-overlay"></label>
 
-        <aside class="w-72 h-full bg-base-100 border-r text-sm">
-          <nav class="flex flex-1 flex-col gap-6 px-4 py-6">
-            <.sidebar_section
-              :if={@current_scope}
-              heading="Quick Links"
-              links={[
-                %{label: "My Tasks", path: ~p"/tasks?assignee_id=#{@current_scope.user}"},
-                %{
-                  label: "My Activity Logs",
-                  path: ~p"/activity_logs?logged_by_id=#{@current_scope.user}"
-                }
-              ]}
-            />
-            <.sidebar_section
-              heading="Reference"
-              links={[
-                %{label: "Projects", path: ~p"/projects"},
-                %{label: "Tasks", path: ~p"/tasks"},
-                %{label: "Activity Logs", path: ~p"/activity_logs"}
-              ]}
-            />
+        <aside class="min-w-3xs h-full bg-base-200 border-r border-base-300 text-sm">
+          <nav class="flex flex-1 flex-col gap-6">
+            <ul class="menu bg-base-200 rounded-box w-full">
+              <.sidebar_section
+                :if={@current_scope}
+                heading="Quick Links"
+                links={[
+                  %{label: "My Tasks", path: ~p"/tasks?assignee_id=#{@current_scope.user}"},
+                  %{
+                    label: "My Activity Logs",
+                    path: ~p"/activity_logs?logged_by_id=#{@current_scope.user}"
+                  }
+                ]}
+              />
+              <.sidebar_section
+                heading="Reference"
+                links={[
+                  %{label: "Projects", path: ~p"/projects"},
+                  %{label: "Tasks", path: ~p"/tasks"},
+                  %{label: "Activity Logs", path: ~p"/activity_logs"}
+                ]}
+              />
+            </ul>
           </nav>
         </aside>
       </div>
@@ -143,12 +148,9 @@ defmodule CalmdoWeb.Layouts do
 
   def sidebar_section(assigns) do
     ~H"""
-    <section>
-      <h2 class="mb-2 px-2 text-xs font-semibold uppercase opacity-60">
-        {@heading}
-      </h2>
-
-      <ul class="space-y-1">
+    <li>
+      <h2 class="menu-title">{@heading}</h2>
+      <ul>
         <li :for={link <- @links}>
           <.link
             navigate={link.path}
@@ -158,7 +160,7 @@ defmodule CalmdoWeb.Layouts do
           </.link>
         </li>
       </ul>
-    </section>
+    </li>
     """
   end
 
