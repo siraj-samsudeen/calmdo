@@ -35,6 +35,8 @@ defmodule CalmdoWeb.Layouts do
     default: [],
     doc: "optional project entries to surface in the sidebar"
 
+  attr :no_wrapper, :boolean, default: false, doc: "removes the border wrapper for full-width content"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -95,9 +97,13 @@ defmodule CalmdoWeb.Layouts do
         <main class="flex flex-1 flex-col bg-base-200">
           <div class="mx-auto flex w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
             <div class="flex-1 space-y-6">
-              <div class="rounded-lg border bg-base-100 p-6 shadow-sm">
+              <%= if @no_wrapper do %>
                 {render_slot(@inner_block)}
-              </div>
+              <% else %>
+                <div class="rounded-lg border bg-base-100 p-6 shadow-sm">
+                  {render_slot(@inner_block)}
+                </div>
+              <% end %>
             </div>
           </div>
         </main>

@@ -47,6 +47,7 @@ defmodule CalmdoWeb.HomeLive.Index do
 
   defp group_by_date(activity_logs) do
     activity_logs
+    |> Enum.reject(&is_nil(&1.date))
     |> Enum.group_by(& &1.date)
     |> Enum.map(fn {date, logs} -> {date, logs} end)
     |> Enum.sort_by(fn {date, _logs} -> date end, {:desc, Date})

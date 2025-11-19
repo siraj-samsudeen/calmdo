@@ -6,7 +6,7 @@ defmodule CalmdoWeb.TaskLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} no_wrapper={true}>
       <.header>
         Listing Tasks
         <:actions>
@@ -101,7 +101,7 @@ defmodule CalmdoWeb.TaskLive.Index do
                   phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
                   class="align-middle hover:cursor-pointer hover:text-[#2563eb]"
                 >
-                  {task.assignee && task.assignee.email}
+                  {task.assignee && display_username(task.assignee)}
                 </td>
                 <td
                   phx-click={JS.navigate(~p"/tasks/#{task}/edit")}
@@ -146,7 +146,7 @@ defmodule CalmdoWeb.TaskLive.Index do
         <%!-- Bold Modern Bulk Edit Panel - Sticky at bottom --%>
         <div
           :if={@selected_task_ids != []}
-          class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-primary/5 to-primary/10 border-t-2 border-primary/30 shadow-2xl z-50"
+          class="fixed bottom-0 left-0 lg:left-72 right-0 bg-base-100 border-t-2 border-primary/30 shadow-2xl z-50"
         >
           <.form for={%{}} phx-submit="apply_bulk_edit">
             <div class="bg-primary text-primary-content px-4 py-2 flex items-center justify-between">
@@ -191,7 +191,7 @@ defmodule CalmdoWeb.TaskLive.Index do
                   <select name="assignee_id" class="select select-bordered select-sm">
                     <option value="">No change</option>
                     <option :for={assignee <- @assignees} value={assignee.id}>
-                      {assignee.email}
+                      {display_username(assignee)}
                     </option>
                   </select>
                 </div>
@@ -438,4 +438,12 @@ defmodule CalmdoWeb.TaskLive.Index do
     |> Enum.map(&String.capitalize/1)
     |> Enum.join(" ")
   end
+
+  defp display_username(%{email: email}) when is_binary(email) do
+    email
+    |> String.split("@")
+    |> List.first()
+  end
+
+  defp display_username(_), do: ""
 end
