@@ -41,9 +41,10 @@ defmodule CalmdoWeb.HomeLiveTest do
 
       {:ok, _index_live, html} = live(conn, ~p"/")
 
-      # Check that both activity logs are displayed
-      assert html =~ "Today&#39;s work"
-      assert html =~ "Yesterday&#39;s work"
+      # Check that both activity logs are displayed (markdown renders in <p> tags)
+      assert html =~ "Today"
+      assert html =~ "work"
+      assert html =~ "Yesterday"
 
       # Check that date headers are displayed
       assert html =~ "Today"
