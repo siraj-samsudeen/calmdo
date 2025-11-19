@@ -32,59 +32,52 @@ defmodule CalmdoWeb.TaskLiveTest do
     setup [:create_task]
 
     test "lists all tasks", %{conn: conn, task: task} do
-      {:ok, _index_live, html} = live(conn, ~p"/tasks")
-
-      assert html =~ "Listing Tasks"
-      assert html =~ task.title
+      conn
+      |> visit(~p"/tasks")
+      |> assert_text("Listing Tasks")
+      |> assert_text(task.title)
     end
 
     test "saves new task", %{conn: conn} do
-      {:ok, index_live, _html} = live(conn, ~p"/tasks")
-
-      assert {:ok, form_live, _} =
-               index_live
-               |> element("main a", "New Task")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/tasks/new")
-
-      assert render(form_live) =~ "New Task"
-
-      assert form_live
-             |> form("#task-form", task: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, index_live, _html} =
-               form_live
-               |> form("#task-form", task: @create_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/tasks")
-
-      html = render(index_live)
-      assert html =~ "Task created successfully"
-      assert html =~ "some title"
+      conn
+      |> visit(~p"/tasks")
+      |> click_link("New Task")
+      |> assert_path(~p"/tasks/new")
+      |> assert_text("New Task")
+      |> fill_in("Title", with: @invalid_attrs.title)
+      |> fill_in("Notes", with: @invalid_attrs.notes)
+      |> fill_in("Due date", with: @invalid_attrs.due_date)
+      |> assert_text("can't be blank")
+      |> fill_in("Title", with: @create_attrs.title)
+      |> fill_in("Notes", with: @create_attrs.notes)
+      |> select("Status", option: @create_attrs.status |> to_string())
+      |> select("Priority", option: @create_attrs.priority |> to_string())
+      |> fill_in("Due date", with: @create_attrs.due_date)
+      |> submit()
+      |> assert_path(~p"/tasks")
+      |> assert_text("Task created successfully")
+      |> assert_text("some title")
     end
 
     test "updates task in listing", %{conn: conn, task: task} do
-      # Navigate directly to edit page (clicking row now goes to edit)
-      assert {:ok, form_live, _html} = live(conn, ~p"/tasks/#{task}/edit")
-
-      assert render(form_live) =~ "Edit Task"
-
-      assert form_live
-             |> form("#task-form", task: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, index_live, _html} =
-               form_live
-               |> form("#task-form", task: @update_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/tasks")
-
-      html = render(index_live)
-      assert html =~ "Task updated successfully"
-      assert html =~ "some updated title"
+      conn
+      |> visit(~p"/tasks/#{task}/edit")
+      |> assert_text("Edit Task")
+      |> fill_in("Title", with: @invalid_attrs.title)
+      # For some reason fill_in doesn't work for textarea without `exact: false` on update
+      |> fill_in("Notes", with: @invalid_attrs.notes, exact: false)
+      |> fill_in("Due date", with: @invalid_attrs.due_date)
+      |> assert_text("can't be blank")
+      |> fill_in("Title", with: @update_attrs.title)
+      |> fill_in("Notes", with: @update_attrs.notes, exact: false)
+      |> select("Status", option: @update_attrs.status |> to_string())
+      |> select("Priority", option: @update_attrs.priority |> to_string())
+      |> fill_in("Due date", with: @update_attrs.due_date)
+      |> submit()
+      |> assert_path(~p"/tasks")
+      |> assert_text("Task updated successfully")
+      |> assert_text("some updated title")
     end
-
   end
 
   describe "Bulk Operations" do
@@ -246,7 +239,12 @@ defmodule CalmdoWeb.TaskLiveTest do
       # Submit form without selecting any field (all empty values)
       html =
         index_live
-        |> form("form[phx-submit='apply_bulk_edit']", %{status: "", priority: "", assignee_id: "", project_id: ""})
+        |> form("form[phx-submit='apply_bulk_edit']", %{
+          status: "",
+          priority: "",
+          assignee_id: "",
+          project_id: ""
+        })
         |> render_submit()
 
       # Should show error message
@@ -338,36 +336,31 @@ defmodule CalmdoWeb.TaskLiveTest do
     setup [:create_task]
 
     test "displays task", %{conn: conn, task: task} do
-      {:ok, _show_live, html} = live(conn, ~p"/tasks/#{task}")
-
-      assert html =~ "Show Task"
-      assert html =~ task.title
+      conn
+      |> visit(~p"/tasks/#{task}")
+      |> assert_has("title", text: "Show Task")
+      |> assert_text(task.title)
     end
 
     test "updates task and returns to show", %{conn: conn, task: task} do
-      {:ok, show_live, _html} = live(conn, ~p"/tasks/#{task}")
-
-      assert {:ok, form_live, _} =
-               show_live
-               |> element("a", "Edit")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/tasks/#{task}/edit?return_to=show")
-
-      assert render(form_live) =~ "Edit Task"
-
-      assert form_live
-             |> form("#task-form", task: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, show_live, _html} =
-               form_live
-               |> form("#task-form", task: @update_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/tasks/#{task}")
-
-      html = render(show_live)
-      assert html =~ "Task updated successfully"
-      assert html =~ "some updated title"
+      conn
+      |> visit(~p"/tasks/#{task}")
+      |> click_link("Edit")
+      |> assert_path(~p"/tasks/#{task}/edit", query_params: %{return_to: "show"})
+      |> assert_text("Edit Task")
+      |> fill_in("Title", with: @invalid_attrs.title)
+      |> fill_in("Notes", with: @invalid_attrs.notes, exact: false)
+      |> fill_in("Due date", with: @invalid_attrs.due_date)
+      |> assert_text("can't be blank")
+      |> fill_in("Title", with: @update_attrs.title)
+      |> fill_in("Notes", with: @update_attrs.notes, exact: false)
+      |> select("Status", option: @update_attrs.status |> to_string())
+      |> select("Priority", option: @update_attrs.priority |> to_string())
+      |> fill_in("Due date", with: @update_attrs.due_date)
+      |> submit()
+      |> assert_path(~p"/tasks/#{task}")
+      |> assert_text("Task updated successfully")
+      |> assert_text("some updated title")
     end
   end
 end

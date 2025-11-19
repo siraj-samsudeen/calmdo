@@ -1,7 +1,6 @@
 defmodule CalmdoWeb.ProjectLiveTest do
   use CalmdoWeb.ConnCase
 
-  import Phoenix.LiveViewTest
   import Calmdo.TasksFixtures
 
   @create_attrs %{name: "some name", completed: true}
@@ -20,69 +19,47 @@ defmodule CalmdoWeb.ProjectLiveTest do
     setup [:create_project]
 
     test "lists all projects", %{conn: conn, project: project} do
-      {:ok, _index_live, html} = live(conn, ~p"/projects")
-
-      assert html =~ "Listing Projects"
-      assert html =~ project.name
+      conn
+      |> visit(~p"/projects")
+      |> assert_text("Listing Projects")
+      |> assert_text(project.name)
     end
 
     test "saves new project", %{conn: conn} do
-      {:ok, index_live, _html} = live(conn, ~p"/projects")
-
-      assert {:ok, form_live, _} =
-               index_live
-               |> element("a", "New Project")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/projects/new")
-
-      assert render(form_live) =~ "New Project"
-
-      assert form_live
-             |> form("#project-form", project: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, index_live, _html} =
-               form_live
-               |> form("#project-form", project: @create_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/projects")
-
-      html = render(index_live)
-      assert html =~ "Project created successfully"
-      assert html =~ "some name"
+      conn
+      |> visit(~p"/projects")
+      |> click_link("New Project")
+      |> assert_path(~p"/projects/new")
+      |> assert_text("New Project")
+      |> fill_in("Name", with: @invalid_attrs.name)
+      |> assert_text("can't be blank")
+      |> fill_in("Name", with: @create_attrs.name)
+      |> submit()
+      |> assert_path(~p"/projects")
+      |> assert_text("Project created successfully")
+      |> assert_text("some name")
     end
 
     test "updates project in listing", %{conn: conn, project: project} do
-      {:ok, index_live, _html} = live(conn, ~p"/projects")
-
-      assert {:ok, form_live, _html} =
-               index_live
-               |> element("#projects-#{project.id} a", "Edit")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/projects/#{project}/edit")
-
-      assert render(form_live) =~ "Edit Project"
-
-      assert form_live
-             |> form("#project-form", project: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, index_live, _html} =
-               form_live
-               |> form("#project-form", project: @update_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/projects")
-
-      html = render(index_live)
-      assert html =~ "Project updated successfully"
-      assert html =~ "some updated name"
+      conn
+      |> visit(~p"/projects")
+      |> click_link("#projects-#{project.id} a", "Edit")
+      |> assert_path(~p"/projects/#{project}/edit")
+      |> assert_text("Edit Project")
+      |> fill_in("Name", with: @invalid_attrs.name)
+      |> assert_text("can't be blank")
+      |> fill_in("Name", with: @update_attrs.name)
+      |> submit()
+      |> assert_path(~p"/projects")
+      |> assert_text("Project updated successfully")
+      |> assert_text("some updated name")
     end
 
     test "deletes project in listing", %{conn: conn, project: project} do
-      {:ok, index_live, _html} = live(conn, ~p"/projects")
-
-      assert index_live |> element("#projects-#{project.id} a", "Delete") |> render_click()
-      refute has_element?(index_live, "#projects-#{project.id}")
+      conn
+      |> visit(~p"/projects")
+      |> click_link("#projects-#{project.id} a", "Delete")
+      |> refute_has("#projects-#{project.id}")
     end
   end
 
@@ -90,36 +67,25 @@ defmodule CalmdoWeb.ProjectLiveTest do
     setup [:create_project]
 
     test "displays project", %{conn: conn, project: project} do
-      {:ok, _show_live, html} = live(conn, ~p"/projects/#{project}")
-
-      assert html =~ project.name
-      assert html =~ "Project overview"
+      conn
+      |> visit(~p"/projects/#{project}")
+      |> assert_text(project.name)
+      |> assert_text("Project overview")
     end
 
     test "updates project and returns to show", %{conn: conn, project: project} do
-      {:ok, show_live, _html} = live(conn, ~p"/projects/#{project}")
-
-      assert {:ok, form_live, _} =
-               show_live
-               |> element("a", "Edit")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/projects/#{project}/edit?return_to=show")
-
-      assert render(form_live) =~ "Edit Project"
-
-      assert form_live
-             |> form("#project-form", project: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, show_live, _html} =
-               form_live
-               |> form("#project-form", project: @update_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/projects/#{project}")
-
-      html = render(show_live)
-      assert html =~ "Project updated successfully"
-      assert html =~ "some updated name"
+      conn
+      |> visit(~p"/projects/#{project}")
+      |> click_link("a", "Edit")
+      |> assert_path(~p"/projects/#{project}/edit", query_params: %{return_to: "show"})
+      |> assert_text("Edit Project")
+      |> fill_in("Name", with: @invalid_attrs.name)
+      |> assert_text("can't be blank")
+      |> fill_in("Name", with: @update_attrs.name)
+      |> submit()
+      |> assert_path(~p"/projects/#{project}")
+      |> assert_text("Project updated successfully")
+      |> assert_text("some updated name")
     end
   end
 end
