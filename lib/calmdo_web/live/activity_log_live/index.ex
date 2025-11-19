@@ -48,6 +48,23 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
           </.link>
         </:action>
       </.table>
+
+      <div class="text-center mt-8 pt-8 border-t border-gray-200">
+        <p class="text-sm text-gray-500 mb-3">
+          Showing activity from the last {@days_back} days
+        </p>
+        <button phx-click="load_more" class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Load More (7 more days)
+        </button>
+      </div>
     </Layouts.app>
     """
   end
@@ -65,11 +82,15 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
 
   @impl true
   def handle_params(params, _uri, socket) do
-    activity_logs = ActivityLogs.list_activity_logs(socket.assigns.current_scope, params)
+    days_back = String.to_integer(params["days"] || "2")
+    params_with_days = Map.put(params, "days", to_string(days_back))
+    activity_logs = ActivityLogs.list_activity_logs(socket.assigns.current_scope, params_with_days)
 
     {:noreply,
      socket
-     |> stream(:activity_logs, activity_logs)}
+     |> assign(:days_back, days_back)
+     |> assign(:filter_params, Map.drop(params, ["days"]))
+     |> stream(:activity_logs, activity_logs, reset: true)}
   end
 
   @impl true
@@ -81,10 +102,28 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
   end
 
   @impl true
+  def handle_event("load_more", _params, socket) do
+    new_days = socket.assigns.days_back + 7
+    params = Map.put(socket.assigns.filter_params, "days", to_string(new_days))
+
+    to =
+      if params == %{"days" => to_string(new_days)},
+        do: ~p"/activity_logs?days=#{new_days}",
+        else: ~p"/activity_logs?#{params}"
+
+    {:noreply, socket |> push_patch(to: to)}
+  end
+
+  @impl true
   def handle_info({type, %Calmdo.ActivityLogs.ActivityLog{}}, socket)
       when type in [:created, :updated, :deleted] do
+    params = Map.put(socket.assigns.filter_params, "days", to_string(socket.assigns.days_back))
+
     {:noreply,
-     stream(socket, :activity_logs, ActivityLogs.list_activity_logs(socket.assigns.current_scope),
+     stream(
+       socket,
+       :activity_logs,
+       ActivityLogs.list_activity_logs(socket.assigns.current_scope, params),
        reset: true
      )}
   end

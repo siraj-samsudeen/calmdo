@@ -87,6 +87,23 @@ defmodule CalmdoWeb.ProjectLive.Show do
               {((log.duration_in_hours || 0) + (log.duration_in_minutes || 0) / 60) |> Float.round(2)}
             </:col>
           </.table>
+
+          <div class="text-center mt-4">
+            <p class="text-sm text-gray-500 mb-2">
+              Showing logs from the last {@days_back} days
+            </p>
+            <button phx-click="load_more" class="btn btn-outline btn-sm">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Load More (7 more days)
+            </button>
+          </div>
         </div>
       </section>
     </Layouts.app>
@@ -104,14 +121,28 @@ defmodule CalmdoWeb.ProjectLive.Show do
     project = Tasks.get_project!(socket.assigns.current_scope, id)
     tasks = Tasks.list_tasks_for_project(socket.assigns.current_scope, project.id)
 
-    logs =
-      Calmdo.ActivityLogs.list_activity_logs_for_project(socket.assigns.current_scope, project.id)
-
     {:ok,
      socket
      |> assign(:page_title, "Show Project")
      |> assign(:project, project)
-     |> stream(:tasks_rows, tasks, reset: true)
+     |> assign(:days_back, 2)
+     |> stream(:tasks_rows, tasks, reset: true)}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    days_back = String.to_integer(params["days"] || "2")
+
+    logs =
+      Calmdo.ActivityLogs.list_activity_logs_for_project(
+        socket.assigns.current_scope,
+        socket.assigns.project.id,
+        days_back
+      )
+
+    {:noreply,
+     socket
+     |> assign(:days_back, days_back)
      |> stream(:logs_rows, logs, reset: true)}
   end
 
@@ -149,10 +180,20 @@ defmodule CalmdoWeb.ProjectLive.Show do
     logs =
       Calmdo.ActivityLogs.list_activity_logs_for_project(
         socket.assigns.current_scope,
-        socket.assigns.project.id
+        socket.assigns.project.id,
+        socket.assigns.days_back
       )
 
     {:noreply, stream(socket, :logs_rows, logs, reset: true)}
+  end
+
+  @impl true
+  def handle_event("load_more", _params, socket) do
+    new_days = socket.assigns.days_back + 7
+
+    {:noreply,
+     socket
+     |> push_patch(to: ~p"/projects/#{socket.assigns.project}?days=#{new_days}")}
   end
 
   defp total_hours(task) do

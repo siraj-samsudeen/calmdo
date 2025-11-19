@@ -45,8 +45,12 @@ defmodule Calmdo.ActivityLogs do
   end
 
   def list_activity_logs(%Scope{} = _scope, params) when is_map(params) do
+    days_back = if params["days"], do: String.to_integer(params["days"]), else: 2
+    cutoff_date = Date.utc_today() |> Date.add(-days_back)
+
     ActivityLog
     |> with_preloads()
+    |> where([al], al.date >= ^cutoff_date)
     |> maybe_where(:task_id, params["task_id"])
     |> maybe_where(:project_id, params["project_id"])
     |> maybe_where(:logged_by_id, params["logged_by_id"])
@@ -88,9 +92,12 @@ defmodule Calmdo.ActivityLogs do
     |> Repo.preload([:task, :project])
   end
 
-  def list_activity_logs_for_project(%Scope{} = _scope, project_id) do
+  def list_activity_logs_for_project(%Scope{} = _scope, project_id, days_back \\ 2) do
+    cutoff_date = Date.utc_today() |> Date.add(-days_back)
+
     ActivityLog
     |> with_preloads()
+    |> where([al], al.date >= ^cutoff_date)
     |> join_tasks()
     |> filter_by_project_or_task_project(project_id)
     |> order_by_recent()
