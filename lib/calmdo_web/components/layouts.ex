@@ -107,15 +107,15 @@ defmodule CalmdoWeb.Layouts do
 
     <div class="drawer lg:drawer-open min-h-[calc(100vh-4rem)]">
       <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
-      <div class="drawer-content flex min-h-[calc(100vh-4rem)] flex-col">
-        <main class="flex flex-1 flex-col bg-base-200">
+      <div class="drawer-content flex">
+        <main class="flex-1 bg-base-100">
           <div class={[
-            "flex w-full flex-1 py-6",
-            if(!@no_padding, do: "mx-auto max-w-6xl px-4 sm:px-6 lg:px-8")
+            "w-full py-6",
+            if(!@no_padding, do: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8")
           ]}>
             <div class={[
               "space-y-6",
-              if(@no_padding, do: "mx-auto w-max max-w-full", else: "flex-1")
+              if(@no_padding, do: "mx-auto w-max max-w-full", else: "w-full")
             ]}>
               <%= if @no_wrapper do %>
                 {render_slot(@inner_block)}
