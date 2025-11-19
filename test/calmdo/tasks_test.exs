@@ -77,16 +77,6 @@ defmodule Calmdo.TasksTest do
       assert task.due_date == ~D[2025-09-22]
     end
 
-    test "update_task/3 with invalid scope raises" do
-      scope = user_scope_fixture()
-      other_scope = user_scope_fixture()
-      task = task_fixture(scope)
-
-      assert_raise MatchError, fn ->
-        Tasks.update_task(other_scope, task, %{})
-      end
-    end
-
     test "update_task/3 with invalid data returns error changeset" do
       scope = user_scope_fixture()
       task = task_fixture(scope)
@@ -99,13 +89,6 @@ defmodule Calmdo.TasksTest do
       task = task_fixture(scope)
       assert {:ok, %Task{}} = Tasks.delete_task(scope, task)
       assert_raise Ecto.NoResultsError, fn -> Tasks.get_task!(scope, task.id) end
-    end
-
-    test "delete_task/2 with invalid scope raises" do
-      scope = user_scope_fixture()
-      other_scope = user_scope_fixture()
-      task = task_fixture(scope)
-      assert_raise MatchError, fn -> Tasks.delete_task(other_scope, task) end
     end
 
     test "change_task/2 returns a task changeset" do

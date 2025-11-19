@@ -118,8 +118,6 @@ defmodule Calmdo.ActivityLogs do
 
   """
   def update_activity_log(%Scope{} = scope, %ActivityLog{} = activity_log, attrs) do
-    true = activity_log.logged_by_id == scope.user.id
-
     with {:ok, activity_log = %ActivityLog{}} <-
            activity_log
            |> ActivityLog.changeset(attrs, scope)
@@ -142,8 +140,6 @@ defmodule Calmdo.ActivityLogs do
 
   """
   def delete_activity_log(%Scope{} = scope, %ActivityLog{} = activity_log) do
-    true = activity_log.logged_by_id == scope.user.id
-
     with {:ok, activity_log = %ActivityLog{}} <-
            Repo.delete(activity_log) do
       broadcast_activity_log(scope, {:deleted, activity_log})
@@ -161,14 +157,12 @@ defmodule Calmdo.ActivityLogs do
 
   """
   def change_activity_log(%Scope{} = scope, %ActivityLog{} = activity_log, attrs \\ %{}) do
-    true = activity_log.logged_by_id == scope.user.id
-
     ActivityLog.changeset(activity_log, attrs, scope)
   end
 
   # Query composition helpers
   defp with_preloads(query) do
-    from q in query, preload: [:task, :project]
+    from q in query, preload: [:task, :project, :logged_by]
   end
 
   defp order_by_recent(query) do

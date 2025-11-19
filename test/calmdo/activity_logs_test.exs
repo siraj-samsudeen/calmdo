@@ -71,16 +71,6 @@ defmodule Calmdo.ActivityLogsTest do
       assert activity_log.notes == "some updated notes"
     end
 
-    test "update_activity_log/3 with invalid scope raises" do
-      scope = user_scope_fixture()
-      other_scope = user_scope_fixture()
-      activity_log = activity_log_fixture(scope)
-
-      assert_raise MatchError, fn ->
-        ActivityLogs.update_activity_log(other_scope, activity_log, %{})
-      end
-    end
-
     test "update_activity_log/3 with invalid data returns error changeset" do
       scope = user_scope_fixture()
       activity_log = activity_log_fixture(scope)
@@ -98,16 +88,6 @@ defmodule Calmdo.ActivityLogsTest do
 
       assert_raise Ecto.NoResultsError, fn ->
         ActivityLogs.get_activity_log!(scope, activity_log.id)
-      end
-    end
-
-    test "delete_activity_log/2 with invalid scope raises" do
-      scope = user_scope_fixture()
-      other_scope = user_scope_fixture()
-      activity_log = activity_log_fixture(scope)
-
-      assert_raise MatchError, fn ->
-        ActivityLogs.delete_activity_log(other_scope, activity_log)
       end
     end
 

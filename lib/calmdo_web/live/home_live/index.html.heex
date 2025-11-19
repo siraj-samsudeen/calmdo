@@ -1,0 +1,135 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold">Activity Feed</h1>
+    <.link navigate={~p"/activity_logs/new"} class="btn btn-primary btn-sm">
+      Log Time
+    </.link>
+  </div>
+
+  <%= if Enum.empty?(@grouped_activities) do %>
+    <div class="text-center py-12">
+      <div class="text-6xl mb-4">📋</div>
+      <h2 class="text-xl font-semibold text-gray-700 mb-2">No activity yet</h2>
+      <p class="text-gray-500 mb-4">Start logging your team's work to see it here</p>
+      <.link navigate={~p"/activity_logs/new"} class="btn btn-primary">
+        Log Your First Activity
+      </.link>
+    </div>
+  <% else %>
+    <div class="space-y-8">
+      <%= for {date, activities} <- @grouped_activities do %>
+        <div class="space-y-4">
+          <!-- Date Header -->
+          <div class="flex items-center gap-3">
+            <h2 class="text-lg font-semibold text-gray-700">
+              <%= format_date_header(date) %>
+            </h2>
+            <div class="flex-1 h-px bg-gray-200"></div>
+          </div>
+
+          <!-- Activity Items -->
+          <div class="space-y-3">
+            <%= for activity <- activities do %>
+              <div class="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+                <div class="flex gap-3">
+                  <!-- Avatar -->
+                  <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                      <%= String.first(activity.logged_by.email) |> String.upcase() %>
+                    </div>
+                  </div>
+
+                  <!-- Content -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-baseline gap-2 mb-1">
+                      <span class="font-semibold text-gray-900">
+                        <%= activity.logged_by.email |> String.split("@") |> List.first() %>
+                      </span>
+                      <span class="text-sm text-gray-500">
+                        <%= relative_time(activity.updated_at) %>
+                      </span>
+                    </div>
+
+                    <div class="text-gray-700 mb-2">
+                      <%= activity.notes %>
+                    </div>
+
+                    <!-- Meta Info -->
+                    <div class="flex flex-wrap items-center gap-3 text-sm">
+                      <%= if activity.task do %>
+                        <.link
+                          navigate={~p"/tasks/#{activity.task}"}
+                          class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                            />
+                          </svg>
+                          <span><%= activity.task.title %></span>
+                        </.link>
+                      <% end %>
+
+                      <%= if activity.project do %>
+                        <.link
+                          navigate={~p"/projects/#{activity.project}"}
+                          class="inline-flex items-center gap-1 text-purple-600 hover:text-purple-800"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                            />
+                          </svg>
+                          <span><%= activity.project.name %></span>
+                        </.link>
+                      <% end %>
+
+                      <span class="inline-flex items-center gap-1 text-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span><%= format_duration(activity) %></span>
+                      </span>
+
+                      <%= if activity.billable do %>
+                        <span class="badge badge-success badge-sm">Billable</span>
+                      <% end %>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex-shrink-0">
+                    <.link
+                      navigate={~p"/activity_logs/#{activity}/edit"}
+                      class="text-gray-400 hover:text-gray-600"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                    </.link>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
