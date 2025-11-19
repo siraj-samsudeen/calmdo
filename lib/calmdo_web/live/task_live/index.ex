@@ -417,9 +417,8 @@ defmodule CalmdoWeb.TaskLive.Index do
     do: {:project_id, String.to_integer(value)}
 
   defp total_hours(task) do
-    Enum.reduce(task.activity_logs || [], 0, fn al, acc ->
-      (al.duration_in_hours || 0) + (acc + (al.duration_in_minutes || 0) / 60)
-    end)
+    # total_hours is calculated in the database query
+    Map.get(task, :total_hours, 0) || 0
   end
 
   defp format_hours(value) when is_number(value) do

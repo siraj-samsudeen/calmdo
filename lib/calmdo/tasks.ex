@@ -39,14 +39,16 @@ defmodule Calmdo.Tasks do
   """
   def list_tasks(%Scope{} = _scope) do
     Task
-    |> with_task_preloads()
+    |> with_task_index_preloads()
+    |> with_total_hours()
     |> order_by_recent()
     |> Repo.all()
   end
 
   def list_tasks(%Scope{} = _scope, params) when is_map(params) do
     Task
-    |> with_task_preloads()
+    |> with_task_index_preloads()
+    |> with_total_hours()
     |> maybe_where(:status, params["status"])
     |> maybe_where(:assignee_id, params["assignee_id"])
     |> order_by_recent()
@@ -231,8 +233,22 @@ defmodule Calmdo.Tasks do
   end
 
   # Query composition helpers
-  defp with_task_preloads(query) do
-    from q in query, preload: [:project, :activity_logs, :assignee]
+  defp with_task_index_preloads(query) do
+    from q in query, preload: [:project, :assignee]
+  end
+
+  defp with_total_hours(query) do
+    from t in query,
+      left_join: al in assoc(t, :activity_logs),
+      group_by: t.id,
+      select_merge: %{
+        total_hours:
+          fragment(
+            "CAST(COALESCE(SUM(COALESCE(?, 0) + COALESCE(?, 0) / 60.0), 0) AS float)",
+            al.duration_in_hours,
+            al.duration_in_minutes
+          )
+      }
   end
 
   defp order_by_recent(query) do
@@ -377,7 +393,8 @@ defmodule Calmdo.Tasks do
 
   def list_tasks_for_project(%Scope{} = _scope, project_id) do
     Task
-    |> with_task_preloads()
+    |> with_task_index_preloads()
+    |> with_total_hours()
     |> maybe_where(:project_id, project_id)
     |> order_by_recent()
     |> Repo.all()
