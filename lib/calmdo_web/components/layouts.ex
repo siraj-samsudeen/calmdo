@@ -39,6 +39,10 @@ defmodule CalmdoWeb.Layouts do
     default: false,
     doc: "removes the border wrapper for full-width content"
 
+  attr :no_padding, :boolean,
+    default: false,
+    doc: "removes horizontal padding from outer container for full-width tables"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -105,8 +109,14 @@ defmodule CalmdoWeb.Layouts do
       <input id="layout-drawer" type="checkbox" class="drawer-toggle" />
       <div class="drawer-content flex min-h-[calc(100vh-4rem)] flex-col">
         <main class="flex flex-1 flex-col bg-base-200">
-          <div class="mx-auto flex w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-            <div class="flex-1 space-y-6">
+          <div class={[
+            "flex w-full flex-1 py-6",
+            if(!@no_padding, do: "mx-auto max-w-6xl px-4 sm:px-6 lg:px-8")
+          ]}>
+            <div class={[
+              "space-y-6",
+              if(@no_padding, do: "mx-auto w-max max-w-full", else: "flex-1")
+            ]}>
               <%= if @no_wrapper do %>
                 {render_slot(@inner_block)}
               <% else %>

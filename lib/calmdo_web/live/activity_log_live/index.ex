@@ -6,7 +6,7 @@ defmodule CalmdoWeb.ActivityLogLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
+    <Layouts.app flash={@flash} current_scope={@current_scope} no_wrapper no_padding>
       <.header>
         Listing Activity logs
         <:actions>
