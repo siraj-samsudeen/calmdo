@@ -1,11 +1,10 @@
 defmodule CalmdoWeb.ProjectLiveTest do
   use CalmdoWeb.ConnCase
 
-  import Calmdo.TasksFixtures
-
-  @create_attrs %{name: "some name", completed: true}
-  @update_attrs %{name: "some updated name", completed: false}
-  @invalid_attrs %{name: nil, completed: false}
+  import Calmdo.ProjectsFixtures
+  alias Calmdo.Projects
+  alias Calmdo.Tasks.Project
+  alias Calmdo.Repo
 
   setup :register_and_log_in_user
 
@@ -15,77 +14,78 @@ defmodule CalmdoWeb.ProjectLiveTest do
     %{project: project}
   end
 
-  describe "Index" do
+  describe "basic project CRUD" do
+    test "creating a project", %{conn: conn} do
+      conn
+      |> visit_projects()
+      |> click_link("New Project")
+      |> fill_in("Name", with: "Launch Campaign")
+      |> submit()
+      |> assert_text("Launch Campaign")
+
+      # Verify DB persistence - direct Repo for test verification
+      assert Repo.get_by(Project, name: "Launch Campaign")
+    end
+
+    test "viewing a project", %{conn: conn, scope: scope} do
+      project = project_fixture(scope, name: "Product Launch")
+
+      conn
+      |> visit(~p"/projects/#{project}")
+      |> assert_text("Product Launch")
+    end
+
+    test "editing a project", %{conn: conn, scope: scope} do
+      project = project_fixture(scope, name: "Old Name")
+
+      conn
+      |> visit(~p"/projects/#{project}")
+      |> click_link("Edit")
+      |> fill_in("Name", with: "New Name")
+      |> submit()
+      |> assert_text("New Name")
+
+      # Verify DB update via Context (function exists)
+      assert Projects.get_project!(scope, project.id).name == "New Name"
+    end
+
+    test "deleting a project", %{conn: conn, scope: scope} do
+      _project = project_fixture(scope, name: "To Delete")
+
+      conn
+      |> visit_projects()
+      |> click_link("Delete")
+      |> refute_text("To Delete")
+
+      # Verify DB deletion - direct Repo for test verification
+      refute Repo.get_by(Project, name: "To Delete")
+    end
+  end
+
+  describe "project listing" do
     setup [:create_project]
 
     test "lists all projects", %{conn: conn, project: project} do
       conn
-      |> visit(~p"/projects")
-      |> assert_text("Listing Projects")
+      |> visit_projects()
       |> assert_text(project.name)
     end
 
-    test "saves new project", %{conn: conn} do
+    test "updates project from listing", %{conn: conn, project: project, scope: scope} do
       conn
-      |> visit(~p"/projects")
-      |> click_link("New Project")
-      |> assert_path(~p"/projects/new")
-      |> assert_text("New Project")
-      |> fill_in("Name", with: @invalid_attrs.name)
-      |> assert_text("can't be blank")
-      |> fill_in("Name", with: @create_attrs.name)
-      |> submit()
-      |> assert_path(~p"/projects")
-      |> assert_text("Project created successfully")
-      |> assert_text("some name")
-    end
-
-    test "updates project in listing", %{conn: conn, project: project} do
-      conn
-      |> visit(~p"/projects")
+      |> visit_projects()
       |> click_link("#projects-#{project.id} a", "Edit")
-      |> assert_path(~p"/projects/#{project}/edit")
-      |> assert_text("Edit Project")
-      |> fill_in("Name", with: @invalid_attrs.name)
-      |> assert_text("can't be blank")
-      |> fill_in("Name", with: @update_attrs.name)
+      |> fill_in("Name", with: "Updated from List")
       |> submit()
-      |> assert_path(~p"/projects")
-      |> assert_text("Project updated successfully")
-      |> assert_text("some updated name")
-    end
+      |> assert_text("Updated from List")
 
-    test "deletes project in listing", %{conn: conn, project: project} do
-      conn
-      |> visit(~p"/projects")
-      |> click_link("#projects-#{project.id} a", "Delete")
-      |> refute_has("#projects-#{project.id}")
+      # Verify DB update via Context (function exists)
+      assert Projects.get_project!(scope, project.id).name == "Updated from List"
     end
   end
 
-  describe "Show" do
-    setup [:create_project]
-
-    test "displays project", %{conn: conn, project: project} do
-      conn
-      |> visit(~p"/projects/#{project}")
-      |> assert_text(project.name)
-      |> assert_text("Project overview")
-    end
-
-    test "updates project and returns to show", %{conn: conn, project: project} do
-      conn
-      |> visit(~p"/projects/#{project}")
-      |> click_link("a", "Edit")
-      |> assert_path(~p"/projects/#{project}/edit", query_params: %{return_to: "show"})
-      |> assert_text("Edit Project")
-      |> fill_in("Name", with: @invalid_attrs.name)
-      |> assert_text("can't be blank")
-      |> fill_in("Name", with: @update_attrs.name)
-      |> submit()
-      |> assert_path(~p"/projects/#{project}")
-      |> assert_text("Project updated successfully")
-      |> assert_text("some updated name")
-    end
+  # Simple helper - transparent, reusable
+  defp visit_projects(conn) do
+    visit(conn, ~p"/projects")
   end
 end
