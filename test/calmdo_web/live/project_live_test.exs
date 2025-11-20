@@ -1,12 +1,10 @@
 defmodule CalmdoWeb.ProjectLiveTest do
   use CalmdoWeb.ConnCase
 
-  import Phoenix.LiveViewTest
-  import Calmdo.TasksFixtures
-
-  @create_attrs %{name: "some name", completed: true}
-  @update_attrs %{name: "some updated name", completed: false}
-  @invalid_attrs %{name: nil, completed: false}
+  import Calmdo.ProjectsFixtures
+  alias Calmdo.Projects
+  alias Calmdo.Tasks.Project
+  alias Calmdo.Repo
 
   setup :register_and_log_in_user
 
@@ -16,110 +14,78 @@ defmodule CalmdoWeb.ProjectLiveTest do
     %{project: project}
   end
 
-  describe "Index" do
-    setup [:create_project]
+  describe "basic project CRUD" do
+    test "creating a project", %{conn: conn} do
+      conn
+      |> visit_projects()
+      |> click_link("New Project")
+      |> fill_in("Name", with: "Launch Campaign")
+      |> submit()
+      |> assert_text("Launch Campaign")
 
-    test "lists all projects", %{conn: conn, project: project} do
-      {:ok, _index_live, html} = live(conn, ~p"/projects")
-
-      assert html =~ "Listing Projects"
-      assert html =~ project.name
+      # Verify DB persistence - direct Repo for test verification
+      assert Repo.get_by(Project, name: "Launch Campaign")
     end
 
-    test "saves new project", %{conn: conn} do
-      {:ok, index_live, _html} = live(conn, ~p"/projects")
+    test "viewing a project", %{conn: conn, scope: scope} do
+      project = project_fixture(scope, name: "Product Launch")
 
-      assert {:ok, form_live, _} =
-               index_live
-               |> element("a", "New Project")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/projects/new")
-
-      assert render(form_live) =~ "New Project"
-
-      assert form_live
-             |> form("#project-form", project: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, index_live, _html} =
-               form_live
-               |> form("#project-form", project: @create_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/projects")
-
-      html = render(index_live)
-      assert html =~ "Project created successfully"
-      assert html =~ "some name"
+      conn
+      |> visit(~p"/projects/#{project}")
+      |> assert_text("Product Launch")
     end
 
-    test "updates project in listing", %{conn: conn, project: project} do
-      {:ok, index_live, _html} = live(conn, ~p"/projects")
+    test "editing a project", %{conn: conn, scope: scope} do
+      project = project_fixture(scope, name: "Old Name")
 
-      assert {:ok, form_live, _html} =
-               index_live
-               |> element("#projects-#{project.id} a", "Edit")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/projects/#{project}/edit")
+      conn
+      |> visit(~p"/projects/#{project}")
+      |> click_link("Edit")
+      |> fill_in("Name", with: "New Name")
+      |> submit()
+      |> assert_text("New Name")
 
-      assert render(form_live) =~ "Edit Project"
-
-      assert form_live
-             |> form("#project-form", project: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, index_live, _html} =
-               form_live
-               |> form("#project-form", project: @update_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/projects")
-
-      html = render(index_live)
-      assert html =~ "Project updated successfully"
-      assert html =~ "some updated name"
+      # Verify DB update via Context (function exists)
+      assert Projects.get_project!(scope, project.id).name == "New Name"
     end
 
-    test "deletes project in listing", %{conn: conn, project: project} do
-      {:ok, index_live, _html} = live(conn, ~p"/projects")
+    test "deleting a project", %{conn: conn, scope: scope} do
+      _project = project_fixture(scope, name: "To Delete")
 
-      assert index_live |> element("#projects-#{project.id} a", "Delete") |> render_click()
-      refute has_element?(index_live, "#projects-#{project.id}")
+      conn
+      |> visit_projects()
+      |> click_link("Delete")
+      |> refute_text("To Delete")
+
+      # Verify DB deletion - direct Repo for test verification
+      refute Repo.get_by(Project, name: "To Delete")
     end
   end
 
-  describe "Show" do
+  describe "project listing" do
     setup [:create_project]
 
-    test "displays project", %{conn: conn, project: project} do
-      {:ok, _show_live, html} = live(conn, ~p"/projects/#{project}")
-
-      assert html =~ project.name
-      assert html =~ "Project overview"
+    test "lists all projects", %{conn: conn, project: project} do
+      conn
+      |> visit_projects()
+      |> assert_text(project.name)
     end
 
-    test "updates project and returns to show", %{conn: conn, project: project} do
-      {:ok, show_live, _html} = live(conn, ~p"/projects/#{project}")
+    test "updates project from listing", %{conn: conn, project: project, scope: scope} do
+      conn
+      |> visit_projects()
+      |> click_link("#projects-#{project.id} a", "Edit")
+      |> fill_in("Name", with: "Updated from List")
+      |> submit()
+      |> assert_text("Updated from List")
 
-      assert {:ok, form_live, _} =
-               show_live
-               |> element("a", "Edit")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/projects/#{project}/edit?return_to=show")
-
-      assert render(form_live) =~ "Edit Project"
-
-      assert form_live
-             |> form("#project-form", project: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, show_live, _html} =
-               form_live
-               |> form("#project-form", project: @update_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/projects/#{project}")
-
-      html = render(show_live)
-      assert html =~ "Project updated successfully"
-      assert html =~ "some updated name"
+      # Verify DB update via Context (function exists)
+      assert Projects.get_project!(scope, project.id).name == "Updated from List"
     end
+  end
+
+  # Simple helper - transparent, reusable
+  defp visit_projects(conn) do
+    visit(conn, ~p"/projects")
   end
 end

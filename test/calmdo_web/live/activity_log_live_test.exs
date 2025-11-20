@@ -3,7 +3,7 @@ defmodule CalmdoWeb.ActivityLogLiveTest do
 
   import Phoenix.LiveViewTest
   import Calmdo.ActivityLogsFixtures
-  import Calmdo.TasksFixtures
+  import Calmdo.ProjectsFixtures
 
   @create_attrs %{duration_in_hours: 42, notes: "some notes", date: "2025-01-01"}
   @update_attrs %{duration_in_hours: 43, notes: "some updated notes"}

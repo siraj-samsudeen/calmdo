@@ -3,6 +3,7 @@ defmodule CalmdoWeb.HomeLiveTest do
 
   import Phoenix.LiveViewTest
   import Calmdo.ActivityLogsFixtures
+  import Calmdo.ProjectsFixtures
   import Calmdo.TasksFixtures
 
   setup :register_and_log_in_user

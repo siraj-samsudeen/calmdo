@@ -3,6 +3,7 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
 
   alias Calmdo.ActivityLogs
   alias Calmdo.ActivityLogs.ActivityLog
+  alias Calmdo.Projects
 
   @impl true
   def render(assigns) do
@@ -77,7 +78,7 @@ defmodule CalmdoWeb.ActivityLogLive.Form do
 
   @impl true
   def mount(params, _session, socket) do
-    projects = Calmdo.Tasks.list_projects(socket.assigns.current_scope)
+    projects = Projects.list_projects(socket.assigns.current_scope)
     tasks = Calmdo.Tasks.list_tasks(socket.assigns.current_scope)
 
     {:ok,

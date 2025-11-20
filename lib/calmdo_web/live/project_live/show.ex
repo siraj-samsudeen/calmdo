@@ -1,6 +1,7 @@
 defmodule CalmdoWeb.ProjectLive.Show do
   use CalmdoWeb, :live_view
 
+  alias Calmdo.Projects
   alias Calmdo.Tasks
 
   @impl true
@@ -12,7 +13,7 @@ defmodule CalmdoWeb.ProjectLive.Show do
         <:subtitle>Project overview with tasks and logs.</:subtitle>
         <:actions>
           <.button navigate={~p"/projects"}>
-            <.icon name="hero-arrow-left" />
+            <.icon name="hero-arrow-left" /> Back
           </.button>
           <.button variant="primary" navigate={~p"/projects/#{@project}/edit?return_to=show"}>
             <.icon name="hero-pencil-square" /> Edit project
@@ -113,12 +114,12 @@ defmodule CalmdoWeb.ProjectLive.Show do
   @impl true
   def mount(%{"id" => id}, _session, socket) do
     if connected?(socket) do
-      Tasks.subscribe_projects(socket.assigns.current_scope)
+      Projects.subscribe_projects(socket.assigns.current_scope)
       Tasks.subscribe_tasks(socket.assigns.current_scope)
       Calmdo.ActivityLogs.subscribe_activity_logs(socket.assigns.current_scope)
     end
 
-    project = Tasks.get_project!(socket.assigns.current_scope, id)
+    project = Projects.get_project!(socket.assigns.current_scope, id)
     tasks = Tasks.list_tasks_for_project(socket.assigns.current_scope, project.id)
 
     {:ok,

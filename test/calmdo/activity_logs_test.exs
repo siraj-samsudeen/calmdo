@@ -8,7 +8,7 @@ defmodule Calmdo.ActivityLogsTest do
 
     import Calmdo.AccountsFixtures, only: [user_scope_fixture: 0]
     import Calmdo.ActivityLogsFixtures
-    import Calmdo.TasksFixtures, only: [project_fixture: 1]
+    import Calmdo.ProjectsFixtures, only: [project_fixture: 1]
 
     @invalid_attrs %{date: nil, duration_in_hours: nil, duration_in_minutes: nil, notes: nil}
 

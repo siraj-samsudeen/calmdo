@@ -13,7 +13,7 @@ defmodule Calmdo.ActivityLogsFixtures do
       |> Map.get(:project_id)
       |> case do
         nil ->
-          Calmdo.TasksFixtures.project_fixture(scope).id
+          Calmdo.ProjectsFixtures.project_fixture(scope).id
 
         id ->
           id

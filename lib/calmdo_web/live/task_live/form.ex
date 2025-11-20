@@ -1,6 +1,7 @@
 defmodule CalmdoWeb.TaskLive.Form do
   use CalmdoWeb, :live_view
 
+  alias Calmdo.Projects
   alias Calmdo.Tasks
   alias Calmdo.Tasks.Task
 
@@ -49,7 +50,7 @@ defmodule CalmdoWeb.TaskLive.Form do
 
   @impl true
   def mount(params, _session, socket) do
-    projects = Tasks.list_projects(socket.assigns.current_scope)
+    projects = Projects.list_projects(socket.assigns.current_scope)
 
     {:ok,
      socket
