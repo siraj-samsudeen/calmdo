@@ -1,7 +1,7 @@
 defmodule CalmdoWeb.UserCreateTaskFromProjectsPageTest do
   use CalmdoWeb.ConnCase
 
-  import Calmdo.TasksFixtures
+  import Calmdo.ProjectsFixtures
 
   setup :register_and_log_in_user
 

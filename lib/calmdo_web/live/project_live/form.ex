@@ -1,7 +1,7 @@
 defmodule CalmdoWeb.ProjectLive.Form do
   use CalmdoWeb, :live_view
 
-  alias Calmdo.Tasks
+  alias Calmdo.Projects
   alias Calmdo.Tasks.Project
 
   @impl true
@@ -37,12 +37,12 @@ defmodule CalmdoWeb.ProjectLive.Form do
   defp return_to(_), do: "index"
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    project = Tasks.get_project!(socket.assigns.current_scope, id)
+    project = Projects.get_project!(socket.assigns.current_scope, id)
 
     socket
     |> assign(:page_title, "Edit Project")
     |> assign(:project, project)
-    |> assign(:form, to_form(Tasks.change_project(socket.assigns.current_scope, project)))
+    |> assign(:form, to_form(Projects.change_project(socket.assigns.current_scope, project)))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -51,13 +51,13 @@ defmodule CalmdoWeb.ProjectLive.Form do
     socket
     |> assign(:page_title, "New Project")
     |> assign(:project, project)
-    |> assign(:form, to_form(Tasks.change_project(socket.assigns.current_scope, project)))
+    |> assign(:form, to_form(Projects.change_project(socket.assigns.current_scope, project)))
   end
 
   @impl true
   def handle_event("validate", %{"project" => project_params}, socket) do
     changeset =
-      Tasks.change_project(socket.assigns.current_scope, socket.assigns.project, project_params)
+      Projects.change_project(socket.assigns.current_scope, socket.assigns.project, project_params)
 
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
@@ -67,7 +67,7 @@ defmodule CalmdoWeb.ProjectLive.Form do
   end
 
   defp save_project(socket, :edit, project_params) do
-    case Tasks.update_project(
+    case Projects.update_project(
            socket.assigns.current_scope,
            socket.assigns.project,
            project_params
@@ -86,7 +86,7 @@ defmodule CalmdoWeb.ProjectLive.Form do
   end
 
   defp save_project(socket, :new, project_params) do
-    case Tasks.create_project(socket.assigns.current_scope, project_params) do
+    case Projects.create_project(socket.assigns.current_scope, project_params) do
       {:ok, project} ->
         {:noreply,
          socket

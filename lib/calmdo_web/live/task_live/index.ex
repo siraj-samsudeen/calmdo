@@ -1,6 +1,7 @@
 defmodule CalmdoWeb.TaskLive.Index do
   use CalmdoWeb, :live_view
 
+  alias Calmdo.Projects
   alias Calmdo.Tasks
 
   @impl true
@@ -276,7 +277,7 @@ defmodule CalmdoWeb.TaskLive.Index do
       socket
       |> assign(:statuses, Ecto.Enum.values(Calmdo.Tasks.Task, :status))
       |> assign(:assignees, Calmdo.Accounts.list_users())
-      |> assign(:projects, Tasks.list_projects(socket.assigns.current_scope))
+      |> assign(:projects, Projects.list_projects(socket.assigns.current_scope))
       |> assign(:selected_task_ids, [])
       |> assign(:all_selected?, false)
 

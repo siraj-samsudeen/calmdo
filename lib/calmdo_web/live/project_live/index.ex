@@ -1,7 +1,7 @@
 defmodule CalmdoWeb.ProjectLive.Index do
   use CalmdoWeb, :live_view
 
-  alias Calmdo.Tasks
+  alias Calmdo.Projects
 
   @impl true
   def render(assigns) do
@@ -45,7 +45,7 @@ defmodule CalmdoWeb.ProjectLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     if connected?(socket) do
-      Tasks.subscribe_projects(socket.assigns.current_scope)
+      Projects.subscribe_projects(socket.assigns.current_scope)
     end
 
     {:ok,
@@ -56,8 +56,8 @@ defmodule CalmdoWeb.ProjectLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    project = Tasks.get_project!(socket.assigns.current_scope, id)
-    {:ok, _} = Tasks.delete_project(socket.assigns.current_scope, project)
+    project = Projects.get_project!(socket.assigns.current_scope, id)
+    {:ok, _} = Projects.delete_project(socket.assigns.current_scope, project)
 
     {:noreply, stream_delete(socket, :projects, project)}
   end
@@ -70,6 +70,6 @@ defmodule CalmdoWeb.ProjectLive.Index do
   end
 
   defp list_projects(current_scope) do
-    Tasks.list_projects(current_scope)
+    Projects.list_projects(current_scope)
   end
 end

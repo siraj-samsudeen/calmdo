@@ -1,6 +1,7 @@
 defmodule CalmdoWeb.UserRecordLogFromProjectsPageTest do
   use CalmdoWeb.ConnCase
 
+  import Calmdo.ProjectsFixtures
   import Calmdo.TasksFixtures
 
   setup :register_and_log_in_user
