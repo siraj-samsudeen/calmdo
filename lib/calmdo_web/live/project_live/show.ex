@@ -41,7 +41,7 @@ defmodule CalmdoWeb.ProjectLive.Show do
           <.table
             id="project-tasks"
             rows={@streams.tasks_rows}
-            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}/edit") end}
+            row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}/edit?return_to=projects") end}
           >
             <:col :let={{_id, task}} label="Title">{task.title}</:col>
             <:col :let={{_id, task}} label="Status">{task.status}</:col>
@@ -56,6 +56,9 @@ defmodule CalmdoWeb.ProjectLive.Show do
               <% end %>
             </:col>
             <:action :let={{_id, task}}>
+              <div class="sr-only">
+                <.link navigate={~p"/tasks/#{task}/edit?return_to=projects"}>Edit task</.link>
+              </div>
               <.link navigate={
                 ~p"/activity_logs/new?return_to=projects&task_id=#{task.id}&project_id=#{@project.id}"
               }>
@@ -79,7 +82,9 @@ defmodule CalmdoWeb.ProjectLive.Show do
           <.table
             id="project-logs"
             rows={@streams.logs_rows}
-            row_click={fn {_id, log} -> JS.navigate(~p"/activity_logs/#{log}") end}
+            row_click={
+              fn {_id, log} -> JS.navigate(~p"/activity_logs/#{log}/edit?return_to=projects") end
+            }
           >
             <:col :let={{_id, log}} label="Date">{log.date}</:col>
             <:col :let={{_id, log}} label="Task">{log.task && log.task.title}</:col>
@@ -87,6 +92,14 @@ defmodule CalmdoWeb.ProjectLive.Show do
             <:col :let={{_id, log}} label="Duration">
               {((log.duration_in_hours || 0) + (log.duration_in_minutes || 0) / 60) |> Float.round(2)}
             </:col>
+            <:col :let={{_id, log}} label="Notes">
+              <.markdown text={log.notes || ""} class="prose-sm text-sm" />
+            </:col>
+            <:action :let={{_id, log}}>
+              <div class="sr-only">
+                <.link navigate={~p"/activity_logs/#{log}/edit?return_to=projects"}>Edit log</.link>
+              </div>
+            </:action>
           </.table>
 
           <div class="text-center mt-4">
