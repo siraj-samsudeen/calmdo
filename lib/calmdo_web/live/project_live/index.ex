@@ -63,7 +63,7 @@ defmodule CalmdoWeb.ProjectLive.Index do
   end
 
   @impl true
-  def handle_info({type, %Calmdo.Tasks.Project{}}, socket)
+  def handle_info({type, %Calmdo.Projects.Project{}}, socket)
       when type in [:created, :updated, :deleted] do
     {:noreply,
      stream(socket, :projects, list_projects(socket.assigns.current_scope), reset: true)}

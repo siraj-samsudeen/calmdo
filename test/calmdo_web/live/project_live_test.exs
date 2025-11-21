@@ -3,7 +3,7 @@ defmodule CalmdoWeb.ProjectLiveTest do
 
   import Calmdo.ProjectsFixtures
   alias Calmdo.Projects
-  alias Calmdo.Tasks.Project
+  alias Calmdo.Projects.Project
   alias Calmdo.Repo
 
   setup :register_and_log_in_user

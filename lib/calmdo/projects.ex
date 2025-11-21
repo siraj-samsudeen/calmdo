@@ -6,7 +6,7 @@ defmodule Calmdo.Projects do
   import Ecto.Query, warn: false
   alias Calmdo.Repo
 
-  alias Calmdo.Tasks.Project
+  alias Calmdo.Projects.Project
   alias Calmdo.Accounts.Scope
 
   @doc """

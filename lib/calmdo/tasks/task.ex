@@ -14,7 +14,7 @@ defmodule Calmdo.Tasks.Task do
 
     belongs_to :created_by, Calmdo.Accounts.User
     belongs_to :assignee, Calmdo.Accounts.User
-    belongs_to :project, Calmdo.Tasks.Project
+    belongs_to :project, Calmdo.Projects.Project
 
     has_many :activity_logs, Calmdo.ActivityLogs.ActivityLog
 

@@ -1,4 +1,4 @@
-defmodule Calmdo.Tasks.Project do
+defmodule Calmdo.Projects.Project do
   use Ecto.Schema
   import Ecto.Changeset
 

@@ -9,7 +9,7 @@ defmodule Calmdo.ActivityLogs.ActivityLog do
     field :notes, :string
     field :billable, :boolean
     belongs_to :task, Calmdo.Tasks.Task
-    belongs_to :project, Calmdo.Tasks.Project
+    belongs_to :project, Calmdo.Projects.Project
     belongs_to :logged_by, Calmdo.Accounts.User
 
     timestamps(type: :utc_datetime)

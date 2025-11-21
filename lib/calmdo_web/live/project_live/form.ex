@@ -2,7 +2,7 @@ defmodule CalmdoWeb.ProjectLive.Form do
   use CalmdoWeb, :live_view
 
   alias Calmdo.Projects
-  alias Calmdo.Tasks.Project
+  alias Calmdo.Projects.Project
 
   @impl true
   def render(assigns) do
@@ -57,7 +57,11 @@ defmodule CalmdoWeb.ProjectLive.Form do
   @impl true
   def handle_event("validate", %{"project" => project_params}, socket) do
     changeset =
-      Projects.change_project(socket.assigns.current_scope, socket.assigns.project, project_params)
+      Projects.change_project(
+        socket.assigns.current_scope,
+        socket.assigns.project,
+        project_params
+      )
 
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end

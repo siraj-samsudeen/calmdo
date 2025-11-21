@@ -4,7 +4,7 @@ defmodule Calmdo.ProjectsTest do
   alias Calmdo.Projects
 
   describe "projects" do
-    alias Calmdo.Tasks.Project
+    alias Calmdo.Projects.Project
 
     import Calmdo.AccountsFixtures, only: [user_scope_fixture: 0]
     import Calmdo.ProjectsFixtures

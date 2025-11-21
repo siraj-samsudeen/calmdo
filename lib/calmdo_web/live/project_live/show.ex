@@ -149,14 +149,14 @@ defmodule CalmdoWeb.ProjectLive.Show do
 
   @impl true
   def handle_info(
-        {:updated, %Calmdo.Tasks.Project{id: id} = project},
+        {:updated, %Calmdo.Projects.Project{id: id} = project},
         %{assigns: %{project: %{id: id}}} = socket
       ) do
     {:noreply, assign(socket, :project, project)}
   end
 
   def handle_info(
-        {:deleted, %Calmdo.Tasks.Project{id: id}},
+        {:deleted, %Calmdo.Projects.Project{id: id}},
         %{assigns: %{project: %{id: id}}} = socket
       ) do
     {:noreply,
@@ -165,7 +165,7 @@ defmodule CalmdoWeb.ProjectLive.Show do
      |> push_navigate(to: ~p"/projects")}
   end
 
-  def handle_info({type, %Calmdo.Tasks.Project{}}, socket)
+  def handle_info({type, %Calmdo.Projects.Project{}}, socket)
       when type in [:created, :updated, :deleted] do
     {:noreply, socket}
   end
