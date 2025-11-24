@@ -332,8 +332,14 @@ defmodule CalmdoWeb.CoreComponents do
   attr :select?, :boolean, default: false, doc: "enables a checkbox column for row selection"
   attr :all_selected?, :boolean, default: false, doc: "whether the select all checkbox is checked"
   attr :selected_ids, :list, default: [], doc: "the list of selected row IDs"
-  attr :select_all_click, :string, default: nil, doc: "the event to fire when the select all checkbox is clicked"
-  attr :row_select_click, :string, default: nil, doc: "the event to fire when a row checkbox is clicked"
+
+  attr :select_all_click, :string,
+    default: nil,
+    doc: "the event to fire when the select all checkbox is clicked"
+
+  attr :row_select_click, :string,
+    default: nil,
+    doc: "the event to fire when a row checkbox is clicked"
 
   slot :col, required: true do
     attr :label, :string
@@ -355,12 +361,15 @@ defmodule CalmdoWeb.CoreComponents do
           <tr>
             <!-- Optional Select-All Checkbox -->
             <th :if={@select?} class="w-12">
-              <input
-                type="checkbox"
-                class="checkbox checkbox-sm"
-                phx-click={@select_all_click}
-                checked={@all_selected?}
-              />
+              <label>
+                <span class="sr-only">Select all</span>
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  phx-click={@select_all_click}
+                  checked={@all_selected?}
+                />
+              </label>
             </th>
             <th :for={col <- @col}>{col[:label]}</th>
             <th :if={@action != []}>
@@ -375,8 +384,9 @@ defmodule CalmdoWeb.CoreComponents do
             class={[@row_click && "hover:bg-base-200"]}
           >
             <td :if={@select?}>
-              <label class="cursor-pointer">
+              <label>
                 <% {_id, mapped} = @row_item.(row) %>
+                <span class="sr-only">{"#{String.capitalize(@id)} #{mapped.id}"}</span>
                 <input
                   type="checkbox"
                   class="checkbox checkbox-sm"

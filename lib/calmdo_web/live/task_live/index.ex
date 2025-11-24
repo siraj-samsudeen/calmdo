@@ -27,6 +27,7 @@ defmodule CalmdoWeb.TaskLive.Index do
           name="status"
           type="select"
           label="Status"
+          prompt="All"
           options={status_options(@statuses)}
           value={@filters.status}
           phx-debounce="300"
@@ -35,6 +36,7 @@ defmodule CalmdoWeb.TaskLive.Index do
           name="assignee_id"
           type="select"
           label="Assignee"
+          prompt="All"
           options={assignee_options(@assignees)}
           value={@filters.assignee_id}
           phx-debounce="300"
@@ -60,8 +62,8 @@ defmodule CalmdoWeb.TaskLive.Index do
           <:col :let={{_id, task}} label="Assignee">
             {task.assignee && display_username(task.assignee)}
           </:col>
-          <:col :let={{_id, task}} label="Status">{format_status(task.status)}</:col>
-          <:col :let={{_id, task}} label="Priority">{task.priority}</:col>
+          <:col :let={{_id, task}} label="Status">{format_label(task.status)}</:col>
+          <:col :let={{_id, task}} label="Priority">{format_label(task.priority)}</:col>
           <:col :let={{_id, task}} label="Due date">{task.due_date}</:col>
           <:col :let={{_id, task}} label="Hours">
             <%= if total_hours(task) > 0 do %>
@@ -74,6 +76,9 @@ defmodule CalmdoWeb.TaskLive.Index do
           </:col>
 
           <:action :let={{_id, task}}>
+            <div class="sr-only">
+              <.link navigate={~p"/tasks/#{task}/edit"}>Edit</.link>
+            </div>
             <.link navigate={log_time_path(task)} class="link link-primary">Log Time</.link>
           </:action>
         </.table>
@@ -83,7 +88,7 @@ defmodule CalmdoWeb.TaskLive.Index do
           :if={@selected_task_ids != []}
           class="fixed bottom-0 left-0 lg:left-72 right-0 bg-base-100 border-t-2 border-primary/30 shadow-2xl z-50"
         >
-          <.form for={%{}} phx-submit="apply_bulk_edit">
+          <.form for={%{}} id="task-bulk-edit" phx-submit="apply_bulk_edit">
             <div class="bg-primary text-primary-content px-4 py-2 flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <.icon name="hero-pencil-square" class="w-5 h-5" />
@@ -103,61 +108,38 @@ defmodule CalmdoWeb.TaskLive.Index do
 
             <div class="p-4">
               <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-semibold text-xs uppercase tracking-wide">
-                      <.icon name="hero-folder" class="w-3 h-3 inline" /> Project
-                    </span>
-                  </label>
-                  <select name="project_id" class="select select-bordered select-sm">
-                    <option value="">No change</option>
-                    <option :for={project <- @projects} value={project.id}>
-                      {project.name}
-                    </option>
-                  </select>
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-semibold text-xs uppercase tracking-wide">
-                      <.icon name="hero-user" class="w-3 h-3 inline" /> Assignee
-                    </span>
-                  </label>
-                  <select name="assignee_id" class="select select-bordered select-sm">
-                    <option value="">No change</option>
-                    <option :for={assignee <- @assignees} value={assignee.id}>
-                      {display_username(assignee)}
-                    </option>
-                  </select>
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-semibold text-xs uppercase tracking-wide">
-                      <.icon name="hero-flag" class="w-3 h-3 inline" /> Status
-                    </span>
-                  </label>
-                  <select name="status" class="select select-bordered select-sm">
-                    <option value="">No change</option>
-                    <option value="started">Started</option>
-                    <option value="work_in_progress">Work In Progress</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-semibold text-xs uppercase tracking-wide">
-                      <.icon name="hero-signal" class="w-3 h-3 inline" /> Priority
-                    </span>
-                  </label>
-                  <select name="priority" class="select select-bordered select-sm">
-                    <option value="">No change</option>
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
-                </div>
+                <.input
+                  name="project_id"
+                  type="select"
+                  label="Project"
+                  prompt="No change"
+                  options={project_options(@projects)}
+                  value={nil}
+                />
+                <.input
+                  name="assignee_id"
+                  type="select"
+                  label="Assignee"
+                  prompt="No change"
+                  options={assignee_options(@assignees)}
+                  value={nil}
+                />
+                <.input
+                  name="status"
+                  type="select"
+                  label="Status"
+                  prompt="No change"
+                  options={status_options(@statuses)}
+                  value={nil}
+                />
+                <.input
+                  name="priority"
+                  type="select"
+                  label="Priority"
+                  prompt="No change"
+                  options={priority_options(@priorities)}
+                  value={nil}
+                />
               </div>
 
               <div class="flex gap-2 justify-between mt-4 pt-4 border-t border-base-300">
@@ -187,19 +169,6 @@ defmodule CalmdoWeb.TaskLive.Index do
     """
   end
 
-  defp status_options(statuses), do: [{"All", nil} | Enum.map(statuses, &{format_status(&1), &1})]
-
-  defp assignee_options(assignees),
-    do: [{"All", nil} | Enum.map(assignees, &{&1.email, &1.id})]
-
-  defp log_time_path(task) do
-    if task.project_id do
-      ~p"/activity_logs/new?task_id=#{task.id}&project_id=#{task.project_id}"
-    else
-      ~p"/activity_logs/new?task_id=#{task.id}"
-    end
-  end
-
   @impl true
   def mount(_params, _session, socket) do
     if connected?(socket) do
@@ -209,6 +178,7 @@ defmodule CalmdoWeb.TaskLive.Index do
     socket =
       socket
       |> assign(:statuses, Ecto.Enum.values(Calmdo.Tasks.Task, :status))
+      |> assign(:priorities, Ecto.Enum.values(Calmdo.Tasks.Task, :priority))
       |> assign(:assignees, Calmdo.Accounts.list_users())
       |> assign(:projects, Projects.list_projects(socket.assigns.current_scope))
       |> assign(:selected_task_ids, [])
@@ -344,8 +314,11 @@ defmodule CalmdoWeb.TaskLive.Index do
      stream(socket, :tasks, Tasks.list_tasks(socket.assigns.current_scope), reset: true)}
   end
 
-  defp parse_bulk_edit_param({"status", value}), do: {:status, String.to_existing_atom(value)}
-  defp parse_bulk_edit_param({"priority", value}), do: {:priority, String.to_existing_atom(value)}
+  defp parse_bulk_edit_param({"status", value}),
+    do: {:status, String.to_existing_atom(value)}
+
+  defp parse_bulk_edit_param({"priority", value}),
+    do: {:priority, String.to_existing_atom(value)}
 
   defp parse_bulk_edit_param({"assignee_id", value}),
     do: {:assignee_id, String.to_integer(value)}
@@ -353,10 +326,8 @@ defmodule CalmdoWeb.TaskLive.Index do
   defp parse_bulk_edit_param({"project_id", value}),
     do: {:project_id, String.to_integer(value)}
 
-  defp total_hours(task) do
-    # total_hours is calculated in the database query
-    Map.get(task, :total_hours, 0) || 0
-  end
+  defp total_hours(task),
+    do: Map.get(task, :total_hours, 0) || 0
 
   defp format_hours(value) when is_number(value) do
     value
@@ -365,9 +336,9 @@ defmodule CalmdoWeb.TaskLive.Index do
     |> to_string()
   end
 
-  defp format_status(nil), do: ""
+  defp format_label(nil), do: ""
 
-  defp format_status(atom) when is_atom(atom) do
+  defp format_label(atom) when is_atom(atom) do
     atom
     |> Atom.to_string()
     |> String.replace("_", " ")
@@ -376,11 +347,29 @@ defmodule CalmdoWeb.TaskLive.Index do
     |> Enum.join(" ")
   end
 
-  defp display_username(%{email: email}) when is_binary(email) do
-    email
-    |> String.split("@")
-    |> List.first()
-  end
+  defp options_from_atoms(list),
+    do: Enum.map(list, &{format_label(&1), &1})
+
+  defp status_options(statuses),
+    do: options_from_atoms(statuses)
+
+  defp priority_options(priorities),
+    do: options_from_atoms(priorities)
+
+  defp assignee_options(assignees),
+    do: Enum.map(assignees, &{display_username(&1), &1.id})
+
+  defp project_options(projects),
+    do: Enum.map(projects, &{&1.name, &1.id})
+
+  defp log_time_path(%{project_id: nil, id: id}),
+    do: ~p"/activity_logs/new?return_to=tasks&task_id=#{id}"
+
+  defp log_time_path(%{project_id: project_id, id: id}),
+    do: ~p"/activity_logs/new?return_to=tasks&task_id=#{id}&project_id=#{project_id}"
+
+  defp display_username(%{email: email}) when is_binary(email),
+    do: email |> String.split("@") |> List.first()
 
   defp display_username(_), do: ""
 end
