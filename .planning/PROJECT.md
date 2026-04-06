@@ -8,6 +8,20 @@ A calm project management web app for small teams (2-5 people). Combines GTD-sty
 
 Every team member can capture thoughts instantly, triage them into projects, focus on today's work, and share what they've learned — without ceremony or overhead.
 
+## Current Milestone: v1.0 CalmDo MVP
+
+**Goal:** Ship a usable project management app that the team deploys and uses from day one — logging work and tracking tasks immediately.
+
+**Target features:**
+- Auth (login/invite), app shell, basic project + task creation, Vercel deployment
+- Kanban board with DnD, task assignment, due dates, activity log with manual time entry
+- Sub-tasks, checklists, comments with @mentions
+- GTD inbox with card-based triage, Today/Focus list with daily reset
+- Start/stop timer, time rollups, billable tracking, learning resources
+- Dashboard, full-text search, admin panel
+
+**Phase order priority:** Thinnest deployable slice first → layer depth. Activity log + manual time entry in Phase 2 (core workflow). Start/stop timer deferred to Phase 5.
+
 ## Requirements
 
 ### Validated
@@ -94,4 +108,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 after initialization*
+*Last updated: 2025-07-14 after milestone v1.0 start*
