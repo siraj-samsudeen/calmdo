@@ -164,33 +164,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROJ-03 | Phase 1 | Pending |
 | PROJ-04 | Phase 1 | Pending |
 | TASK-01 | Phase 1 | Pending |
-| TASK-02 | Phase 1 | Pending |
-| TASK-03 | Phase 1 | Pending |
-| TASK-04 | Phase 1 | Pending |
-| TASK-05 | Phase 1 | Pending |
-| TASK-06 | Phase 1 | Pending |
-| SUBT-01 | Phase 2 | Pending |
-| SUBT-02 | Phase 2 | Pending |
-| CHKL-01 | Phase 2 | Pending |
-| CHKL-02 | Phase 2 | Pending |
-| CMNT-01 | Phase 2 | Pending |
-| CMNT-02 | Phase 2 | Pending |
-| ALOG-01 | Phase 4 | Pending |
-| ALOG-02 | Phase 4 | Pending |
-| ALOG-03 | Phase 4 | Pending |
-| TIME-01 | Phase 4 | Pending |
-| TIME-02 | Phase 4 | Pending |
-| TIME-03 | Phase 4 | Pending |
-| TIME-04 | Phase 4 | Pending |
-| TIME-05 | Phase 4 | Pending |
-| TIME-06 | Phase 4 | Pending |
-| TIME-07 | Phase 4 | Pending |
-| INBX-01 | Phase 3 | Pending |
-| INBX-02 | Phase 3 | Pending |
-| INBX-03 | Phase 3 | Pending |
-| TDAY-01 | Phase 3 | Pending |
-| TDAY-02 | Phase 3 | Pending |
-| TDAY-03 | Phase 3 | Pending |
+| TASK-02 | Phase 2 | Pending |
+| TASK-03 | Phase 2 | Pending |
+| TASK-04 | Phase 2 | Pending |
+| TASK-05 | Phase 2 | Pending |
+| TASK-06 | Phase 2 | Pending |
+| SUBT-01 | Phase 3 | Pending |
+| SUBT-02 | Phase 3 | Pending |
+| CHKL-01 | Phase 3 | Pending |
+| CHKL-02 | Phase 3 | Pending |
+| CMNT-01 | Phase 3 | Pending |
+| CMNT-02 | Phase 3 | Pending |
+| ALOG-01 | Phase 2 | Pending |
+| ALOG-02 | Phase 2 | Pending |
+| ALOG-03 | Phase 5 | Pending |
+| TIME-01 | Phase 5 | Pending |
+| TIME-02 | Phase 2 | Pending |
+| TIME-03 | Phase 5 | Pending |
+| TIME-04 | Phase 5 | Pending |
+| TIME-05 | Phase 5 | Pending |
+| TIME-06 | Phase 5 | Pending |
+| TIME-07 | Phase 5 | Pending |
+| INBX-01 | Phase 4 | Pending |
+| INBX-02 | Phase 4 | Pending |
+| INBX-03 | Phase 4 | Pending |
+| TDAY-01 | Phase 4 | Pending |
+| TDAY-02 | Phase 4 | Pending |
+| TDAY-03 | Phase 4 | Pending |
 | LRSC-01 | Phase 5 | Pending |
 | LRSC-02 | Phase 5 | Pending |
 | LRSC-03 | Phase 5 | Pending |
@@ -211,4 +211,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-03 after roadmap creation*
+*Last updated: 2025-07-14 after roadmap v1.0 rewrite*

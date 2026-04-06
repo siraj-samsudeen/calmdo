@@ -2,7 +2,7 @@
 
 ## Overview
 
-CalmDo delivers a calm project management app for small teams in six vertical slices. Each phase ships a complete, usable feature that a user can interact with and verify. Auth, schema, and navigation are embedded in the first feature phase rather than isolated as infrastructure. The build order follows data dependencies: tasks exist before sub-tasks, tasks exist before inbox triage creates them, activity log exists before time tracking writes to it, and dashboard aggregates everything last.
+CalmDo ships in six phases optimized for production-first development. Phase 1 delivers the thinnest usable slice — auth, projects, basic task creation, and Vercel deployment — so the team can start using the app immediately. Each subsequent phase layers depth onto the core workflow. Activity log and manual time entry ship in Phase 2 (the user's top priority after basic tasks), while the full timer and advanced time features come in Phase 5. Dashboard aggregation comes last because it depends on all other features.
 
 ## Phases
 
@@ -12,31 +12,44 @@ CalmDo delivers a calm project management app for small teams in six vertical sl
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Projects & Kanban** - User can log in, create projects, and manage tasks on a drag-and-drop kanban board
-- [ ] **Phase 2: Task Depth** - User can break tasks into sub-tasks, add checklists, and discuss work via comments
-- [ ] **Phase 3: GTD Inbox & Today Focus** - User can capture thoughts in a personal inbox, triage them into projects, and focus on today's work
-- [ ] **Phase 4: Activity Log & Time Tracking** - User can journal work on tasks, track time with a timer, and manage billable hours with budgets
-- [ ] **Phase 5: Learning Resources** - User can build a shared team knowledge base of URLs and learnings
+- [ ] **Phase 1: Foundation & Deploy** - User can log in, create projects and tasks, and the app is live on Vercel
+- [ ] **Phase 2: Core Task Loop + Activity Log** - User can manage tasks on a kanban board and log what they did with optional time
+- [ ] **Phase 3: Task Depth** - User can break tasks into sub-tasks, add checklists, and discuss work via comments
+- [ ] **Phase 4: GTD Inbox & Today Focus** - User can capture thoughts in a personal inbox, triage them into projects, and focus on today's work
+- [ ] **Phase 5: Timer & Learning Resources** - User can track time with start/stop timers, manage billable hours, and build a shared knowledge base
 - [ ] **Phase 6: Dashboard, Search & Admin** - User can see a unified dashboard, search across everything, and manage team members
 
 ## Phase Details
 
-### Phase 1: Projects & Kanban
-**Goal**: A team member can log in, see shared and personal projects, create tasks, and move them across a kanban board
+### Phase 1: Foundation & Deploy
+**Goal**: A team member can sign up via invite, log in, create projects and tasks (simple list), and the app is deployed and live on Vercel
 **Depends on**: Nothing (first phase)
-**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-05, NAV-01, PROJ-01, PROJ-02, PROJ-03, PROJ-04, TASK-01, TASK-02, TASK-03, TASK-04, TASK-05, TASK-06
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-05, NAV-01, PROJ-01, PROJ-02, PROJ-03, PROJ-04, TASK-01
 **Success Criteria** (what must be TRUE):
   1. User can sign up via an admin-created invite link, log in with email/password, and log out from any page
   2. User can navigate between Dashboard (placeholder), Inbox (placeholder), Today (placeholder), Projects, and Learning Resources (placeholder) from a persistent sidebar
   3. User can create a project (shared by default), toggle it to personal, view all accessible projects, and archive a project
-  4. User can create tasks within a project, view them on a kanban board (To Do / In Progress / Done), drag tasks between columns and reorder within columns
-  5. User can assign a task to a team member and set an optional due date
+  4. User can create tasks with title and markdown description within a project, displayed as a simple list
+  5. App is deployed to Vercel with working auth and real-time data via Convex
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 2: Task Depth
-**Goal**: A user can decompose tasks into sub-tasks, track progress with checklists, and discuss work through comments
+### Phase 2: Core Task Loop + Activity Log
+**Goal**: A user can manage tasks on a kanban board with drag-and-drop and log work done on tasks with optional time entries
 **Depends on**: Phase 1
+**Requirements**: TASK-02, TASK-03, TASK-04, TASK-05, TASK-06, ALOG-01, ALOG-02, TIME-02
+**Success Criteria** (what must be TRUE):
+  1. User can view tasks on a kanban board with columns: To Do, In Progress, Done
+  2. User can drag-and-drop tasks between kanban columns and reorder within columns
+  3. User can assign a task to a single team member and set an optional due date
+  4. User can add activity log entries to a task with text and optional time duration
+  5. Activity log is visually separate from comments (tab or section), and user can manually add time entries with duration and description
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 3: Task Depth
+**Goal**: A user can decompose tasks into sub-tasks, track progress with checklists, and discuss work through comments
+**Depends on**: Phase 2
 **Requirements**: SUBT-01, SUBT-02, CHKL-01, CHKL-02, CMNT-01, CMNT-02
 **Success Criteria** (what must be TRUE):
   1. User can create sub-tasks within a task (one level deep) with the same capabilities as parent tasks (status, assignee, due date) and reorder them
@@ -45,7 +58,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 3: GTD Inbox & Today Focus
+### Phase 4: GTD Inbox & Today Focus
 **Goal**: A user can quickly capture thoughts into a private inbox, triage them into projects as tasks, and curate a daily focus list
 **Depends on**: Phase 1
 **Requirements**: INBX-01, INBX-02, INBX-03, TDAY-01, TDAY-02, TDAY-03
@@ -57,28 +70,17 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 4: Activity Log & Time Tracking
-**Goal**: A user can maintain a work journal on tasks, track time with start/stop timers and manual entries, and manage billable hours against project budgets
+### Phase 5: Timer & Learning Resources
+**Goal**: A user can track time with start/stop timers, manage billable hours with project budgets, export reports, and build a shared team knowledge base
 **Depends on**: Phase 2
-**Requirements**: ALOG-01, ALOG-02, ALOG-03, TIME-01, TIME-02, TIME-03, TIME-04, TIME-05, TIME-06, TIME-07
+**Requirements**: TIME-01, TIME-03, TIME-04, TIME-05, TIME-06, TIME-07, ALOG-03, LRSC-01, LRSC-02, LRSC-03, LRSC-04, LRSC-05, LRSC-06, LRSC-07
 **Success Criteria** (what must be TRUE):
-  1. User can add activity log entries (text + optional time duration) to a task, visually separate from comments
-  2. User can start/stop a timer on a task (one active timer at a time -- starting a new one auto-stops the previous) and stopping creates an activity log entry
-  3. User can manually add time entries with duration and description, and mark entries as billable
-  4. Time entries roll up to show total time per task and per project, with configurable monthly budgets per project
-  5. User can generate and export a monthly billable time report (CSV) for a project
-**Plans**: TBD
-**UI hint**: yes
-
-### Phase 5: Learning Resources
-**Goal**: A user can curate and share a team knowledge base of URLs with summaries, tags, and usage tracking
-**Depends on**: Phase 1
-**Requirements**: LRSC-01, LRSC-02, LRSC-03, LRSC-04, LRSC-05, LRSC-06, LRSC-07
-**Success Criteria** (what must be TRUE):
-  1. User can create a learning resource with URL and summary, either standalone or linked to a specific task
-  2. User can assign tags to resources and star/favorite them
-  3. Clicking a resource URL increments its visit count, and higher-visited resources appear higher in the list
-  4. User can browse all learning resources in a searchable, filterable list (by tags, favorites, recency)
+  1. User can start/stop a timer on a task (one active timer at a time — starting a new one auto-stops the previous) and stopping creates an activity log entry
+  2. Time entries roll up to show total time per task and per project
+  3. User can mark time entries as billable, set a monthly time budget per project, and see alerts when billable time is below 80% or above 120% of budget
+  4. User can generate and export a monthly billable time report (CSV) for a project
+  5. User can create learning resources (URL + summary), standalone or linked to tasks, shared with the team
+  6. User can assign tags, star/favorite resources, and browse all resources in a searchable filterable list sorted by visit count
 **Plans**: TBD
 **UI hint**: yes
 
@@ -102,9 +104,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Projects & Kanban | 0/0 | Not started | - |
-| 2. Task Depth | 0/0 | Not started | - |
-| 3. GTD Inbox & Today Focus | 0/0 | Not started | - |
-| 4. Activity Log & Time Tracking | 0/0 | Not started | - |
-| 5. Learning Resources | 0/0 | Not started | - |
+| 1. Foundation & Deploy | 0/0 | Not started | - |
+| 2. Core Task Loop + Activity Log | 0/0 | Not started | - |
+| 3. Task Depth | 0/0 | Not started | - |
+| 4. GTD Inbox & Today Focus | 0/0 | Not started | - |
+| 5. Timer & Learning Resources | 0/0 | Not started | - |
 | 6. Dashboard, Search & Admin | 0/0 | Not started | - |
