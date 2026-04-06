@@ -189,7 +189,9 @@ A calm project management web app for small teams (2-5 people). Combines GTD-sty
 <!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
-Conventions not yet established. Will populate as patterns emerge during development.
+### Workflow Preferences
+
+- **No transition prompts in discuss-phase:** When discussing gray areas, move directly to the next area after completing one. Do not ask "More questions or move to next?" between areas.
 <!-- GSD:conventions-end -->
 
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
