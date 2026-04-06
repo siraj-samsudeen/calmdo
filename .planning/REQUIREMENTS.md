@@ -152,63 +152,63 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| AUTH-04 | — | Pending |
-| AUTH-05 | — | Pending |
-| AUTH-06 | — | Pending |
-| NAV-01 | — | Pending |
-| PROJ-01 | — | Pending |
-| PROJ-02 | — | Pending |
-| PROJ-03 | — | Pending |
-| PROJ-04 | — | Pending |
-| TASK-01 | — | Pending |
-| TASK-02 | — | Pending |
-| TASK-03 | — | Pending |
-| TASK-04 | — | Pending |
-| TASK-05 | — | Pending |
-| TASK-06 | — | Pending |
-| SUBT-01 | — | Pending |
-| SUBT-02 | — | Pending |
-| CHKL-01 | — | Pending |
-| CHKL-02 | — | Pending |
-| CMNT-01 | — | Pending |
-| CMNT-02 | — | Pending |
-| ALOG-01 | — | Pending |
-| ALOG-02 | — | Pending |
-| ALOG-03 | — | Pending |
-| TIME-01 | — | Pending |
-| TIME-02 | — | Pending |
-| TIME-03 | — | Pending |
-| TIME-04 | — | Pending |
-| TIME-05 | — | Pending |
-| TIME-06 | — | Pending |
-| TIME-07 | — | Pending |
-| INBX-01 | — | Pending |
-| INBX-02 | — | Pending |
-| INBX-03 | — | Pending |
-| TDAY-01 | — | Pending |
-| TDAY-02 | — | Pending |
-| TDAY-03 | — | Pending |
-| LRSC-01 | — | Pending |
-| LRSC-02 | — | Pending |
-| LRSC-03 | — | Pending |
-| LRSC-04 | — | Pending |
-| LRSC-05 | — | Pending |
-| LRSC-06 | — | Pending |
-| LRSC-07 | — | Pending |
-| DASH-01 | — | Pending |
-| DASH-02 | — | Pending |
-| DASH-03 | — | Pending |
-| DASH-04 | — | Pending |
-| SRCH-01 | — | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 6 | Pending |
+| AUTH-05 | Phase 1 | Pending |
+| AUTH-06 | Phase 6 | Pending |
+| NAV-01 | Phase 1 | Pending |
+| PROJ-01 | Phase 1 | Pending |
+| PROJ-02 | Phase 1 | Pending |
+| PROJ-03 | Phase 1 | Pending |
+| PROJ-04 | Phase 1 | Pending |
+| TASK-01 | Phase 1 | Pending |
+| TASK-02 | Phase 1 | Pending |
+| TASK-03 | Phase 1 | Pending |
+| TASK-04 | Phase 1 | Pending |
+| TASK-05 | Phase 1 | Pending |
+| TASK-06 | Phase 1 | Pending |
+| SUBT-01 | Phase 2 | Pending |
+| SUBT-02 | Phase 2 | Pending |
+| CHKL-01 | Phase 2 | Pending |
+| CHKL-02 | Phase 2 | Pending |
+| CMNT-01 | Phase 2 | Pending |
+| CMNT-02 | Phase 2 | Pending |
+| ALOG-01 | Phase 4 | Pending |
+| ALOG-02 | Phase 4 | Pending |
+| ALOG-03 | Phase 4 | Pending |
+| TIME-01 | Phase 4 | Pending |
+| TIME-02 | Phase 4 | Pending |
+| TIME-03 | Phase 4 | Pending |
+| TIME-04 | Phase 4 | Pending |
+| TIME-05 | Phase 4 | Pending |
+| TIME-06 | Phase 4 | Pending |
+| TIME-07 | Phase 4 | Pending |
+| INBX-01 | Phase 3 | Pending |
+| INBX-02 | Phase 3 | Pending |
+| INBX-03 | Phase 3 | Pending |
+| TDAY-01 | Phase 3 | Pending |
+| TDAY-02 | Phase 3 | Pending |
+| TDAY-03 | Phase 3 | Pending |
+| LRSC-01 | Phase 5 | Pending |
+| LRSC-02 | Phase 5 | Pending |
+| LRSC-03 | Phase 5 | Pending |
+| LRSC-04 | Phase 5 | Pending |
+| LRSC-05 | Phase 5 | Pending |
+| LRSC-06 | Phase 5 | Pending |
+| LRSC-07 | Phase 5 | Pending |
+| DASH-01 | Phase 6 | Pending |
+| DASH-02 | Phase 6 | Pending |
+| DASH-03 | Phase 6 | Pending |
+| DASH-04 | Phase 6 | Pending |
+| SRCH-01 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 51 total
-- Mapped to phases: 0
-- Unmapped: 51
+- Mapped to phases: 51
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-03 after review cleanup*
+*Last updated: 2026-04-03 after roadmap creation*
