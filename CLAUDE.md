@@ -46,6 +46,23 @@ not as components in `App.tsx`. Auth-gated views go under `_app.*`, public views
 under `_auth.*`. When a second content page is needed, add a route file; do not
 touch `App.tsx`.
 
+## Pre-push verification
+
+Vercel's deploy runs `npx convex deploy --cmd 'npm run build'`, which is two
+separate TypeScript passes — `tsc -b` over `src/`, then a second `tsc` over
+`convex/` triggered by `convex deploy`. Vitest does **not** typecheck; only
+`tsc` does. Pushing without running `tsc` leaves these errors for Vercel.
+
+`npm run verify` runs the full gauntlet locally: `npm run build` + `tsc -p convex --noEmit`
++ `vitest --run`. A pre-push hook at `.githooks/pre-push` runs it on every
+`git push`. Hooks are wired via the `prepare` script on `npm install`
+(`git config core.hooksPath .githooks`).
+
+Bypass for genuine WIP pushes: `git push --no-verify`. Do not bypass to
+silence a real error — fix it. The `.github/workflows/ci.yml` GitHub Action
+runs `npm run verify` on every PR as a backstop in case the hook is bypassed
+or not configured.
+
 ## Testing
 
 See `docs/TESTING.md` for the full testing philosophy.

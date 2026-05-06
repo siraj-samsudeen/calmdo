@@ -11,7 +11,9 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify": "npm run build && tsc -p convex --noEmit && vitest --run",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "@convex-dev/auth": "^0.0.91",

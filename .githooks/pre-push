@@ -1,0 +1,13 @@
+#!/bin/sh
+# Mirror Vercel's deploy gauntlet locally so build failures surface before push.
+# Vercel runs: `npx convex deploy --cmd 'npm run build'`
+#   1. `npm run build` (tsc -b + vite build) — typechecks src/ and bundles
+#   2. convex deploy then runs tsc over convex/ — catches Convex-realm type errors
+# Vitest does NOT typecheck; only tsc does. That gap is what this hook closes.
+#
+# Bypass for genuine WIP pushes: `git push --no-verify`.
+
+set -e
+
+echo "→ pre-push: npm run verify"
+npm run verify
