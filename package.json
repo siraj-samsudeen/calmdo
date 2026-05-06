@@ -8,31 +8,48 @@
     "predev": "convex init && node setup.mjs --once",
     "build": "tsc -b && vite build",
     "lint": "tsc && eslint .  --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@convex-dev/auth": "^0.0.91",
+    "@tanstack/react-router": "^1.169.2",
     "convex": "^1.36.1",
+    "convex-helpers": "^0.1.116",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
   "devDependencies": {
     "@convex-dev/eslint-plugin": "^1.2.2",
+    "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/vite": "^4.2.2",
+    "@tanstack/router-devtools": "^1.166.13",
+    "@tanstack/router-plugin": "^1.167.34",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "convex-test": "^0.0.51",
     "dotenv": "^17.4.2",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "feather-testing-convex": "^0.5.5",
     "globals": "^17.5.0",
+    "jsdom": "^29.1.1",
     "prettier": "^3.8.3",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.9"
+    "vite": "^8.0.9",
+    "vitest": "^4.1.5"
   }
 }
