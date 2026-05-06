@@ -27,7 +27,6 @@ export default defineConfig({
         "**/test.setup.*",
         "src/main.tsx",
         "src/routeTree.gen.ts",
-        "src/routes/__root.tsx",
         "convex/testingFunctions.ts",
         "convex/auth.ts",
         "convex/http.ts",
@@ -40,13 +39,18 @@ export default defineConfig({
           alias: { "@convex-dev/auth/dist/react/client.js": authClientPath },
         },
         test: {
+          // globals must be set at the project level — root-level globals is NOT
+          // inherited by inline project configs in Vitest projects mode. Without it,
+          // typeof afterEach === "undefined" when @testing-library/react registers
+          // its cleanup hook, so RTL auto-cleanup silently never fires.
+          globals: true,
           name: "browser",
           environment: "jsdom",
           include: ["src/**/*.test.{ts,tsx}"],
           setupFiles: ["./src/test.setup.ts"],
           server: {
             deps: {
-              inline: ["feather-testing-convex", "@convex-dev/auth"],
+              inline: ["feather-testing-convex", "@convex-dev/auth", "convex-test"],
             },
           },
         },
