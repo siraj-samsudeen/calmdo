@@ -490,19 +490,19 @@ describe("App", () => {
   test("authenticated user sees welcome with their email", async ({ testClient }) => {
     // Insert user with email directly — seed() injects userId which authTables rejects.
     // See Deviations: seed() and users table.
-    const userId = await testClient.run(async (ctx) =>
+    const userId = await testClient.run(async (ctx: any) =>
       ctx.db.insert("users", { email: "test@example.com" }),
     );
     const client = testClient.withIdentity({ subject: userId });
     const session = renderWithSession(<App />, client);
-    await session.assertText(/Welcome, test@example.com!/);
+    await session.assertText("Welcome, test@example.com!");
   });
 
   test("unauthenticated user sees sign-in form", async ({ testClient }) => {
     // authenticated: false triggers the synchronous path in ConvexProviderWithAuth.
     // Without it, auth loading takes ~1.2s (router init + effect + query).
     const session = renderWithSession(<App />, testClient, { authenticated: false });
-    await session.assertText(/sign in/i);
+    await session.assertText("Sign in");
   });
 });
 ```
@@ -601,7 +601,7 @@ test("auth flow", async ({ session }) => {
   });
 
   await test.step("sign out returns to sign-in form", async () => {
-    await session.clickButton("Sign out").assertText(/sign in/i);
+    await session.clickButton("Sign out").assertText("Sign in");
   });
 });
 ```
@@ -717,3 +717,33 @@ const client = testClient.withIdentity({ subject: userId });
 
 **Rule for future work**: `seed()` is safe for app-owned tables. Never use it for
 `users` or any other table defined by `authTables`.
+
+### 2026-05-06 — `assertText` typed string-only; `tsc -b` catches it but vitest does not
+
+**Planned** (steps 7a, 11): `assertText(/Welcome.../)` and `assertText(/sign in/i)` — regex args.
+
+**What happened**: Vercel build (`tsc -b && vite build`) failed with TS2345: "Argument
+of type RegExp is not assignable to parameter of type string". `feather-testing-core`
+declares `assertText(text: string)` even though the runtime delegates to RTL
+`findByText` (which accepts string | RegExp). Local `vitest --run` does not
+typecheck and so green tests masked the build break.
+
+A secondary error surfaced in the same file: `testClient.run(async (ctx) => ...)`
+flagged `ctx` as implicit-any. `testClient` is typed `any` by feather, and calling
+`any.run(fn)` does not propagate contextual types into `fn` — under `strict`,
+`ctx` becomes implicit any.
+
+**Fix**: Use literal strings for `assertText`; annotate the `run` callback param
+explicitly.
+```ts
+const userId = await testClient.run(async (ctx: any) =>
+  ctx.db.insert("users", { email: "test@example.com" }),
+);
+await session.assertText("Welcome, test@example.com!");
+await session.assertText("Sign in");
+```
+Fixed in `src/App.test.tsx` and `e2e/auth.spec.ts`. Plan code blocks updated above.
+
+**Rule for future work**: pass strings to `assertText` to match the public type.
+Do not rely on `vitest --run` alone before pushing — run `npm run build` (which
+includes `tsc -b`) to catch type errors that the test runner skips.
