@@ -336,7 +336,7 @@ Do not write artificial tests solely to satisfy the metric.
 import { createConvexTest, renderWithConvex, renderWithConvexAuth } from "feather-testing-convex";
 import { renderWithSession } from "feather-testing-convex/rtl";
 import schema from "./schema";
-export const modules = import.meta.glob("./**/!(*.*.*)*.*s");
+export const modules = import.meta.glob(["./**/*.{ts,js}", "!./**/*.test.*"]);
 export const test = createConvexTest(schema, modules);
 export { renderWithConvex, renderWithConvexAuth, renderWithSession };
 ```
@@ -349,34 +349,72 @@ directly from `feather-testing-convex` in test files.
 **`src/test.setup.ts`:**
 ```ts
 import "@testing-library/jest-dom/vitest";
+import { configure } from "@testing-library/react";
+
+// Router + auth + query initialization takes ~1.2s end-to-end in jsdom.
+// RTL default (1000ms) is too short for App-level integration tests.
+configure({ asyncUtilTimeout: 5000 });
 ```
 
 **`vitest.config.ts`** (root):
 ```ts
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
-import { convexTestProviderPlugin } from "feather-testing-convex/vitest-plugin";
+import path from "path";
+
+// @convex-dev/auth/dist/react/client.js is an internal path not in the package
+// exports field. feather-testing-convex imports it; inlining both packages through
+// Vite's bundler lets the alias resolve correctly.
+const authClientPath = path.resolve(
+  "node_modules/@convex-dev/auth/dist/react/client.js",
+);
 
 export default defineConfig({
-  // convexTestProviderPlugin resolves internal @convex-dev/auth imports that
-  // Vite can't find on its own — required for any test that touches Convex Auth
-  // convexTestProviderPlugin is imported from feather-testing-convex/vitest-plugin (not root)
-  plugins: [react(), convexTestProviderPlugin()],
+  plugins: [react()],
+  resolve: {
+    alias: { "@convex-dev/auth/dist/react/client.js": authClientPath },
+  },
   test: {
     globals: true,
     coverage: {
       provider: "v8",
       thresholds: { lines: 100, functions: 100, branches: 100, statements: 100 },
       include: ["src/**", "convex/**"],
-      exclude: ["convex/_generated/**", "**/*.test.*", "**/test.setup.*"],
+      exclude: [
+        "convex/_generated/**",
+        "**/*.test.*",
+        "**/test.setup.*",
+        "src/main.tsx",
+        "src/routeTree.gen.ts",
+        "convex/testingFunctions.ts",
+        "convex/auth.ts",
+        "convex/http.ts",
+      ],
     },
     projects: [
       {
+        plugins: [react()],
+        resolve: {
+          alias: { "@convex-dev/auth/dist/react/client.js": authClientPath },
+        },
         test: {
+          // globals must be set at the project level — root-level globals is NOT
+          // inherited by inline project configs in Vitest projects mode. Without it,
+          // typeof afterEach === "undefined" when @testing-library/react registers
+          // its cleanup hook, so RTL auto-cleanup silently never fires.
+          globals: true,
           name: "browser",
           environment: "jsdom",
           include: ["src/**/*.test.{ts,tsx}"],
           setupFiles: ["./src/test.setup.ts"],
+          server: {
+            deps: {
+              // feather-testing-convex and @convex-dev/auth must be inlined so
+              // the internal @convex-dev/auth/dist/react/client.js path resolves.
+              // convex-test must be inlined so import.meta.glob works inside it.
+              inline: ["feather-testing-convex", "@convex-dev/auth", "convex-test"],
+            },
+          },
         },
       },
       {
@@ -449,13 +487,21 @@ import { renderWithSession } from "feather-testing-convex/rtl";
 import App from "./App";
 
 describe("App", () => {
-  test("authenticated user sees welcome with their email", async ({ client }) => {
+  test("authenticated user sees welcome with their email", async ({ testClient }) => {
+    // Insert user with email directly — seed() injects userId which authTables rejects.
+    // See Deviations: seed() and users table.
+    const userId = await testClient.run(async (ctx) =>
+      ctx.db.insert("users", { email: "test@example.com" }),
+    );
+    const client = testClient.withIdentity({ subject: userId });
     const session = renderWithSession(<App />, client);
-    await session.assertText(/Welcome,/);
+    await session.assertText(/Welcome, test@example.com!/);
   });
 
   test("unauthenticated user sees sign-in form", async ({ testClient }) => {
-    const session = renderWithSession(<App />, testClient);
+    // authenticated: false triggers the synchronous path in ConvexProviderWithAuth.
+    // Without it, auth loading takes ~1.2s (router init + effect + query).
+    const session = renderWithSession(<App />, testClient, { authenticated: false });
     await session.assertText(/sign in/i);
   });
 });
@@ -481,17 +527,20 @@ test("viewer returns null when unauthenticated", async ({ testClient }) => {
 
 ### 9. `convex/testingFunctions.ts` — clearAll mutation for E2E cleanup
 
-Canonical Convex pattern (from convex-helpers). Iterates `Object.keys(schema.tables)`
-so it automatically covers every table future agents add — no hardcoded list to maintain.
-Also clears scheduled functions and storage. `testingMutation` from `convex-helpers`
-wraps it as dev-only so it cannot run in production.
+Iterates `Object.keys(schema.tables)` so it automatically covers every table future
+agents add — no hardcoded list to maintain. Also clears scheduled functions and storage.
+Guarded by `IS_TEST` env var so it cannot run in production.
+
+`testingMutation` from `convex-helpers` does not exist — use a plain `mutation` with
+an env guard instead.
 
 ```ts
-import { testingMutation } from "convex-helpers/server/testing";
+import { mutation } from "./_generated/server";
 import schema from "./schema";
 
-export const clearAll = testingMutation({
+export const clearAll = mutation({
   handler: async ({ db, scheduler, storage }) => {
+    if (!process.env.IS_TEST) throw new Error("clearAll: only callable in tests");
     for (const table of Object.keys(schema.tables)) {
       const docs = await db.query(table as any).collect();
       await Promise.all(docs.map((d) => db.delete(d._id)));
@@ -504,18 +553,9 @@ export const clearAll = testingMutation({
 });
 ```
 
-Add `convex-helpers` to dependencies:
+Add `convex-helpers` to dependencies (used elsewhere):
 ```
 npm install convex-helpers
-```
-
-**Implementation note:** before writing this file, verify:
-1. `testingMutation` is exported from `convex-helpers/server/testing` (check package exports)
-2. The correct accessor for storage cleanup — `db.system.query("_storage")` vs `ctx.storage.list()`
-
-If `testingMutation` is not available, fall back to a plain `mutation` with a guard:
-```ts
-if (process.env.NODE_ENV === "production") throw new Error("clearAll in prod");
 ```
 
 ### 10. `e2e/fixtures.ts` — Playwright session fixture setup
@@ -534,7 +574,12 @@ export { expect } from "@playwright/test";
 
 ### 11. `e2e/auth.spec.ts` — E2E tests (Level 3, happy path)
 
-Same Session DSL as integration tests — no raw Playwright selectors in test bodies:
+Same Session DSL as integration tests — no raw Playwright selectors in test bodies.
+
+Use `test.step()` to group sign-up and sign-out into a single flow test. Step 2
+continues from step 1's authenticated session — no redundant re-signup. Steps share
+state: this is the right model when the scenario is a sequential journey, not two
+independent states.
 
 ```ts
 import { test } from "./fixtures";
@@ -542,10 +587,11 @@ import { test } from "./fixtures";
 const EMAIL = "test@example.com";
 const PASSWORD = "Password1!";
 
-// clearAll runs before each test so every test starts with a clean slate.
-// Both tests sign up (not sign in) because no account exists at the start of each test.
-test.describe("auth flow", () => {
-  test("sign up shows welcome with email", async ({ session }) => {
+// clearAll runs before the test, so it starts with a clean slate.
+// Sign up (not sign in) because no account exists at the start.
+// Steps share state: step 2 (sign out) continues from step 1's authenticated session.
+test("auth flow", async ({ session }) => {
+  await test.step("sign up shows welcome with email", async () => {
     await session
       .visit("/")
       .fillIn("Email", EMAIL)
@@ -554,14 +600,8 @@ test.describe("auth flow", () => {
       .assertText(`Welcome, ${EMAIL}!`);
   });
 
-  test("sign out returns to sign-in form", async ({ session }) => {
-    await session
-      .visit("/")
-      .fillIn("Email", EMAIL)
-      .fillIn("Password", PASSWORD)
-      .clickButton("Sign up")
-      .clickButton("Sign out")
-      .assertText(/sign in/i);
+  await test.step("sign out returns to sign-in form", async () => {
+    await session.clickButton("Sign out").assertText(/sign in/i);
   });
 });
 ```
@@ -632,3 +672,48 @@ npm run test:coverage
 # E2E — happy path auth flow in a real browser
 npm run test:e2e
 ```
+
+---
+
+## Deviations
+
+### 2026-05-06 — Providers moved from `__root.tsx` to `main.tsx`
+
+**Planned** (step 4 / 4c): `__root.tsx` owns `ConvexReactClient` and
+`ConvexAuthProvider`, stripped from `main.tsx`.
+
+**What happened**: feather's `renderWithSession` wraps the component under test with
+its own `ConvexTestAuthProvider` (outer). The inner `ConvexAuthProvider` in
+`__root.tsx` shadowed it — React context inner-wins — so feather's mock auth state
+was silently overridden. Every test was stuck in `isLoading: true` forever.
+
+**Fix**: `ConvexReactClient` and `ConvexAuthProvider` stay in `main.tsx`. `__root.tsx`
+is layout-only (`<Outlet />` + DevTools). `main.tsx` is excluded from test renders so
+feather's outer provider is the only one in the tree.
+
+**Rule for future work**: auth providers must not appear inside any component that
+tests render directly. `main.tsx` is the only safe home.
+
+Tracked upstream: https://github.com/siraj-samsudeen/feather-testing-convex/issues/12
+
+---
+
+### 2026-05-06 — `seed()` cannot be used for the `users` table
+
+**Planned** (step 7a): `seed("users", { email: "..." })` to set up the authenticated
+user's email for the App smoke test.
+
+**What happened**: feather's `seed(table, data)` auto-injects `{ userId, ...data }`.
+The `users` table schema from `authTables` does not accept a `userId` field —
+validator rejected it at runtime.
+
+**Fix**: Insert users directly via `testClient.run()` then call `withIdentity()`:
+```ts
+const userId = await testClient.run(async (ctx) =>
+  ctx.db.insert("users", { email: "test@example.com" }),
+);
+const client = testClient.withIdentity({ subject: userId });
+```
+
+**Rule for future work**: `seed()` is safe for app-owned tables. Never use it for
+`users` or any other table defined by `authTables`.
