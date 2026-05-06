@@ -5,16 +5,16 @@ import App from "./App";
 
 describe("App", () => {
   test("authenticated user sees welcome with their email", async ({ testClient }) => {
-    const userId = await testClient.run(async (ctx) =>
+    const userId = await testClient.run(async (ctx: any) =>
       ctx.db.insert("users", { email: "test@example.com" }),
     );
     const client = testClient.withIdentity({ subject: userId });
     const session = renderWithSession(<App />, client);
-    await session.assertText(/Welcome, test@example.com!/);
+    await session.assertText("Welcome, test@example.com!");
   });
 
   test("unauthenticated user sees sign-in form", async ({ testClient }) => {
     const session = renderWithSession(<App />, testClient, { authenticated: false });
-    await session.assertText(/sign in/i);
+    await session.assertText("Sign in");
   });
 });

@@ -17,6 +17,6 @@ test("auth flow", async ({ session }) => {
   });
 
   await test.step("sign out returns to sign-in form", async () => {
-    await session.clickButton("Sign out").assertText(/sign in/i);
+    await session.clickButton("Sign out").assertText("Sign in");
   });
 });
