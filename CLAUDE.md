@@ -11,3 +11,26 @@ Convex agent skills for common tasks can be installed by running
 `npx convex ai-files install`.
 
 <!-- convex-ai-end -->
+
+## Commit Workflow
+
+Each commit adds one numbered plan file to `plans/` describing what was implemented.
+Reference it from the commit message: "See plans/0003-feature-name.md".
+The directory is append-only — nothing is ever overwritten. Plans are browsable in
+any editor, linkable from PRs and commit messages, and form a permanent readable log
+of architectural decisions.
+
+## Routing
+
+TanStack Router (SPA mode). Add new views as route files under `src/routes/` —
+not as components in `App.tsx`. Auth-gated views go under `_app.*`, public views
+under `_auth.*`. When a second content page is needed, add a route file; do not
+touch `App.tsx`.
+
+## Testing
+
+See `docs/TESTING.md` for the full testing philosophy.
+Three levels: integration first (feather-testing-convex + Vitest), unit tests for
+edge cases and coverage gaps (convex-test + Vitest), E2E for critical user journeys
+(Playwright with feather-testing-convex/playwright session fixture).
+Same Session DSL across integration and E2E levels.
