@@ -747,3 +747,25 @@ Fixed in `src/App.test.tsx` and `e2e/auth.spec.ts`. Plan code blocks updated abo
 **Rule for future work**: pass strings to `assertText` to match the public type.
 Do not rely on `vitest --run` alone before pushing — run `npm run build` (which
 includes `tsc -b`) to catch type errors that the test runner skips.
+
+### 2026-05-06 — `convex deploy` runs `tsc` on `convex/`; chokes on `import.meta.glob`
+
+**Planned**: `convex/test.setup.ts` uses `import.meta.glob([...])` (the standard
+convex-test pattern) to register modules with the in-memory test runtime.
+
+**What happened**: Vercel runs `npx convex deploy --cmd 'npm run build'`. The `convex deploy`
+step typechecks the `convex/` directory with its own tsconfig before pushing
+functions. Convex's tsconfig does not include Vite types, so `import.meta.glob`
+is unknown — error TS2339: "Property 'glob' does not exist on type 'ImportMeta'".
+The app build (`tsc -b && vite build`) passed because Vite owns `import.meta.glob`;
+the Convex tsc is a separate pass.
+
+**Fix**: Exclude test files from `convex/tsconfig.json`. Tests run under Vitest
+(which knows `import.meta.glob`), not under Convex deploy.
+```json
+"exclude": ["./_generated", "./**/*.test.ts", "./test.setup.ts"]
+```
+
+**Rule for future work**: anything inside `convex/` that uses Vite-only APIs
+must be excluded from `convex/tsconfig.json`. Reproduce the deploy typecheck
+locally with `npx tsc -p convex --noEmit` before pushing.
