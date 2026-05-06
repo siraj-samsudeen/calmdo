@@ -102,3 +102,81 @@ Legitimate exceptions:
 - Browser/platform-specific behaviour
 
 Do not write artificial tests solely to satisfy the metric.
+
+## Known Pitfalls
+
+### Provider ownership: feather vs. ConvexAuthProvider
+
+`renderWithSession` wraps the component with feather's `ConvexTestAuthProvider`
+(outer). If the component tree also contains a `ConvexAuthProvider` from
+`@convex-dev/auth/react` (inner), React context inner-wins and feather's auth
+state is silently overridden. The inner provider uses whatever `VITE_CONVEX_URL`
+is set (undefined in tests) and stays in `isLoading: true` forever.
+
+**Rule**: `ConvexReactClient` and `ConvexAuthProvider` must live in `main.tsx` only —
+not inside any component that tests will render.
+
+### `globals: true` must be set at the project level
+
+In Vitest projects mode, root-level `test.globals` is NOT inherited by inline
+project configs. If not set at the project level, `typeof afterEach === "undefined"`
+when `@testing-library/react` registers its cleanup hook, so RTL auto-cleanup
+never fires. Stale renders accumulate across tests, and `findByRole("button")`
+starts finding elements from previous tests.
+
+**Fix**: Explicitly set `globals: true` in each vitest project config.
+
+### `convex-test` in browser project: `import.meta.glob` must be inlined
+
+`convex-test`'s built-in module discovery uses `import.meta.glob` internally.
+In the browser vitest project, this function is undefined unless `convex-test` is
+in `server.deps.inline`. Without it, you see `(intermediate value).glob is not a function`.
+
+**Fix**: Add `"convex-test"` to `server.deps.inline` in the browser project.
+
+### Glob negation (`!(*.*.*)*.*s`) fails for files outside `src/` in rolldown
+
+Vite 8 (rolldown) does not correctly evaluate extglob negation patterns like
+`!(*.*.*)*.*s` when the glob is processed for files outside the `src/` directory.
+The `_generated/` directory is silently excluded.
+
+**Fix**: Use array-style globs with separate exclude entries:
+```ts
+import.meta.glob(["./**/*.{ts,js}", "!./**/*.test.*"])
+```
+
+### App-level integration tests are slow (~1.2s)
+
+TanStack Router initialization (pending → idle), Convex auth state effect, and
+query resolution together take ~1.2s in jsdom. RTL's default `asyncUtilTimeout`
+is 1000ms — just short enough to cause flaky failures.
+
+**Fix**: In `src/test.setup.ts`:
+```ts
+configure({ asyncUtilTimeout: 5000 });
+```
+
+### `seed()` must not be used for the `users` table
+
+Feather's `seed(table, data)` auto-adds `{ userId, ...data }` where `userId` is
+the authenticated user's ID. The `users` table schema from `authTables` does not
+accept a `userId` field — the validator rejects it.
+
+**Fix**: Insert users directly via `testClient.run()`:
+```ts
+const userId = await testClient.run(async (ctx) =>
+  ctx.db.insert("users", { email: "test@example.com" }),
+);
+const client = testClient.withIdentity({ subject: userId });
+```
+
+### `renderWithSession(component, testClient)` defaults to `authenticated: true`
+
+Without `{ authenticated: false }`, feather's wrapper sets `isAuthenticated: true`
+even for an unauthenticated client. This means the `_app.tsx` guard renders
+`<Outlet />` and the query runs against a client with no identity.
+
+For unauthenticated tests, always pass the option explicitly:
+```ts
+renderWithSession(<App />, testClient, { authenticated: false });
+```
