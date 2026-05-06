@@ -20,6 +20,25 @@ The directory is append-only — nothing is ever overwritten. Plans are browsabl
 any editor, linkable from PRs and commit messages, and form a permanent readable log
 of architectural decisions.
 
+### Recording deviations from a plan
+
+When implementation diverges from a plan, append a `## Deviations` section to the
+**bottom of the original plan file** (e.g. `plans/0001-*.md`). Each entry: what was
+planned, what actually happened, the fix, and a rule for future work. Date each entry.
+
+Do not create separate deviation files — deviations only make sense next to the plan
+they deviate from, and separate files rot.
+
+**When to write a new plan instead of a deviation:**
+- The work is genuinely new scope, not a correction of existing scope → new `plans/NNNN-*.md`
+- A deviation is large enough to be its own architectural record → promote to new plan and link back
+
+**When to update the plan text directly instead of writing a deviation:**
+- The plan contained incorrect code or commands that would fail if followed literally
+- A better approach was discovered that supersedes the original (e.g. `test.step()` for E2E flows)
+- Fix the plan text so a future agent following it would succeed; add a deviation only if the
+  original intent differed from the outcome in a way worth recording
+
 ## Routing
 
 TanStack Router (SPA mode). Add new views as route files under `src/routes/` —
